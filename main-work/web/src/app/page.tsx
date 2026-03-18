@@ -27,8 +27,10 @@ export default function HomePage() {
         <h2 style={{ marginTop: 0 }}>Current stack</h2>
         <ul style={{ marginBottom: 0, lineHeight: 1.7 }}>
           <li>Next.js 15 + React</li>
-          <li>Better Auth</li>
-          <li>Polar</li>
+          <li>Better Auth + Polar</li>
+          <li>Neon + Drizzle ORM</li>
+          <li>Inngest</li>
+          <li>Stream</li>
         </ul>
       </section>
 

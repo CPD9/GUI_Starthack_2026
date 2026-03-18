@@ -18,3 +18,6 @@ Next.js 15 app for the StartHack 2026 analytics assistant.
 - `npm run start`
 - `npm run lint`
 - `npm run typecheck`
+- `npm run db:generate`
+- `npm run db:push`
+- `npm run inngest:dev`
