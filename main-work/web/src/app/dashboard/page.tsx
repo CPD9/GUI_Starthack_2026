@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import type { QueryPlan, QueryResult } from "@/lib/query/types";
+import { ChartPreview } from "@/components/dashboard/chart-preview";
 
 type QueryApiSuccess = {
   runId: string;
@@ -19,6 +20,12 @@ type QueryRun = {
   createdAt: string;
 };
 
+const promptTemplates = [
+  "Summarize all available tensile strength properties for steel.",
+  "Is there a trend that tensile strength is decreasing over the last 6 months?",
+  "How do Machine A and Machine B differ for tensile strength on steel?",
+];
+
 const cardStyle: CSSProperties = {
   border: "1px solid #1f2a44",
   borderRadius: 14,
@@ -35,6 +42,15 @@ const buttonStyle: CSSProperties = {
   cursor: "pointer",
 };
 
+const mutedText: CSSProperties = { color: "#b5c0da", margin: 0 };
+
+const statusStyles: Record<QueryRun["status"], CSSProperties> = {
+  queued: { background: "#1f2a44", color: "#9db4df" },
+  running: { background: "#3d2f10", color: "#f9c874" },
+  completed: { background: "#143523", color: "#8be1b4" },
+  failed: { background: "#3f1a1a", color: "#ff9d9d" },
+};
+
 export default function DashboardPage() {
   const [prompt, setPrompt] = useState(
     "Is there a trend that tensile strength is decreasing over the last 6 months?"
@@ -43,12 +59,24 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [latest, setLatest] = useState<QueryApiSuccess | null>(null);
   const [history, setHistory] = useState<QueryRun[]>([]);
+  const [lastRunDurationMs, setLastRunDurationMs] = useState<number | null>(null);
 
   const persistedLabel = useMemo(
     () =>
       latest == null ? "No run yet" : latest.persisted ? "Persistence: enabled" : "Persistence: disabled",
     [latest]
   );
+
+  const resultMeta = useMemo(() => {
+    if (!latest) {
+      return null;
+    }
+
+    const chartSeries = latest.result.chart?.series ?? [];
+    const pointCount = chartSeries.reduce((sum, serie) => sum + serie.values.length, 0);
+    const runCount = history.length;
+    return { pointCount, runCount };
+  }, [latest, history.length]);
 
   const loadHistory = useCallback(async () => {
     try {
@@ -64,6 +92,7 @@ export default function DashboardPage() {
   }, []);
 
   const runQuery = async () => {
+    const startedAt = Date.now();
     setLoading(true);
     setError(null);
 
@@ -86,6 +115,7 @@ export default function DashboardPage() {
       }
 
       setLatest(payload);
+      setLastRunDurationMs(Date.now() - startedAt);
       await loadHistory();
     } catch (requestError) {
       setError(
@@ -112,10 +142,34 @@ export default function DashboardPage() {
     >
       <header style={cardStyle}>
         <h1 style={{ margin: 0 }}>Analytics dashboard (MVP)</h1>
-        <p style={{ marginBottom: 0, color: "#b5c0da" }}>
+        <p style={{ ...mutedText, marginTop: 10 }}>
           Ask a question in natural language to test summary, trend, and
           machine-comparison flows.
         </p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
+          <span
+            style={{
+              fontSize: 12,
+              borderRadius: 999,
+              padding: "4px 10px",
+              background: "#1f2a44",
+              color: "#9db4df",
+            }}
+          >
+            Intent detection: summary/trend/comparison
+          </span>
+          <span
+            style={{
+              fontSize: 12,
+              borderRadius: 999,
+              padding: "4px 10px",
+              background: "#1f2a44",
+              color: "#9db4df",
+            }}
+          >
+            {persistedLabel}
+          </span>
+        </div>
       </header>
 
       <section style={{ ...cardStyle, display: "grid", gap: 12 }}>
@@ -137,6 +191,25 @@ export default function DashboardPage() {
             font: "inherit",
           }}
         />
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {promptTemplates.map((template, index) => (
+            <button
+              key={template}
+              type="button"
+              onClick={() => setPrompt(template)}
+              title={template}
+              style={{
+                ...buttonStyle,
+                background: "#122341",
+                borderColor: "#243d6a",
+                fontSize: 13,
+                padding: "8px 10px",
+              }}
+            >
+              {`Template ${index + 1}`}
+            </button>
+          ))}
+        </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <button
             type="button"
@@ -150,12 +223,39 @@ export default function DashboardPage() {
           >
             {loading ? "Running..." : "Run query"}
           </button>
-          <span style={{ color: "#9fb2d8" }}>{persistedLabel}</span>
+          <span style={{ color: "#9fb2d8" }}>
+            {lastRunDurationMs == null ? "No run time yet" : `Last run: ${lastRunDurationMs} ms`}
+          </span>
         </div>
         {error ? (
           <p style={{ margin: 0, color: "#ff9d9d" }}>{error}</p>
         ) : null}
       </section>
+
+      {resultMeta ? (
+        <section
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+            gap: 12,
+          }}
+        >
+          <div style={cardStyle}>
+            <p style={{ margin: 0, color: "#8da4d3", fontSize: 12 }}>Detected intent</p>
+            <h3 style={{ margin: "8px 0 0", textTransform: "capitalize" }}>
+              {latest?.queryPlan.intent}
+            </h3>
+          </div>
+          <div style={cardStyle}>
+            <p style={{ margin: 0, color: "#8da4d3", fontSize: 12 }}>Chart data points</p>
+            <h3 style={{ margin: "8px 0 0" }}>{resultMeta.pointCount}</h3>
+          </div>
+          <div style={cardStyle}>
+            <p style={{ margin: 0, color: "#8da4d3", fontSize: 12 }}>Runs loaded</p>
+            <h3 style={{ margin: "8px 0 0" }}>{resultMeta.runCount}</h3>
+          </div>
+        </section>
+      ) : null}
 
       <section
         style={{
@@ -168,13 +268,22 @@ export default function DashboardPage() {
         <article style={{ ...cardStyle, display: "grid", gap: 14 }}>
           <h2 style={{ margin: 0 }}>Latest result</h2>
           {!latest ? (
-            <p style={{ margin: 0, color: "#b5c0da" }}>
+            <p style={mutedText}>
               No result yet. Submit a prompt to generate a query plan and
               output.
             </p>
           ) : (
             <>
               <p style={{ margin: 0 }}>{latest.result.summary}</p>
+              <div style={{ display: "grid", gap: 8 }}>
+                <strong>Resolved metric</strong>
+                <p style={mutedText}>
+                  {latest.result.metric.label}
+                  {latest.result.metric.unit ? ` (${latest.result.metric.unit})` : ""}
+                  {" · "}
+                  <code>{latest.result.metric.id}</code>
+                </p>
+              </div>
               <div style={{ display: "grid", gap: 8 }}>
                 <strong>How this was computed</strong>
                 <ul style={{ margin: 0, paddingLeft: 18, color: "#b5c0da" }}>
@@ -194,21 +303,9 @@ export default function DashboardPage() {
               </div>
 
               {latest.result.chart ? (
-                <div style={{ display: "grid", gap: 6 }}>
-                  <strong>Chart payload preview</strong>
-                  <pre
-                    style={{
-                      margin: 0,
-                      padding: 12,
-                      background: "#09101c",
-                      border: "1px solid #24324f",
-                      borderRadius: 8,
-                      overflowX: "auto",
-                      color: "#cfe0ff",
-                    }}
-                  >
-                    {JSON.stringify(latest.result.chart, null, 2)}
-                  </pre>
+                <div style={{ display: "grid", gap: 8 }}>
+                  <strong>Chart preview</strong>
+                  <ChartPreview chart={latest.result.chart} />
                 </div>
               ) : null}
             </>
@@ -218,7 +315,7 @@ export default function DashboardPage() {
         <aside style={{ ...cardStyle, display: "grid", gap: 10 }}>
           <h2 style={{ margin: 0 }}>Recent runs</h2>
           {history.length === 0 ? (
-            <p style={{ margin: 0, color: "#b5c0da" }}>
+            <p style={mutedText}>
               Query history appears once `DATABASE_URL` is configured.
             </p>
           ) : (
@@ -232,10 +329,27 @@ export default function DashboardPage() {
                   background: "#0a1220",
                 }}
               >
-                <p style={{ margin: "0 0 6px", fontWeight: 600 }}>{run.status}</p>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                  <span
+                    style={{
+                      ...statusStyles[run.status],
+                      borderRadius: 999,
+                      fontWeight: 600,
+                      fontSize: 12,
+                      padding: "3px 8px",
+                      textTransform: "uppercase",
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    {run.status}
+                  </span>
+                  <span style={{ margin: 0, color: "#8da4d3", fontSize: 12 }}>
+                    {new Date(run.createdAt).toLocaleTimeString()}
+                  </span>
+                </div>
                 <p
                   style={{
-                    margin: "0 0 6px",
+                    margin: "8px 0 6px",
                     color: "#b5c0da",
                     fontSize: 14,
                     lineHeight: 1.4,
@@ -243,9 +357,7 @@ export default function DashboardPage() {
                 >
                   {run.prompt}
                 </p>
-                <p style={{ margin: 0, color: "#8da4d3", fontSize: 12 }}>
-                  {new Date(run.createdAt).toLocaleString()}
-                </p>
+                <p style={{ margin: 0, color: "#8da4d3", fontSize: 12 }}>{run.id}</p>
               </div>
             ))
           )}
