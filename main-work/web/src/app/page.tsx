@@ -36,9 +36,12 @@ export default function HomePage() {
 
       <section style={sectionStyle}>
         <h2 style={{ marginTop: 0 }}>Next implementation step</h2>
-        <p style={{ marginBottom: 0, color: "#b5c0da" }}>
-          Build auth screens and wire session-aware routes in a dedicated feature
-          branch before merging into <code>develop</code>.
+        <p style={{ marginTop: 0, color: "#b5c0da" }}>
+          Query planner and API scaffolding are now in place.
+        </p>
+        <p style={{ marginBottom: 0 }}>
+          Open the MVP dashboard at <a href="/dashboard">/dashboard</a> to run
+          summary, trend, and comparison prompts.
         </p>
       </section>
     </main>

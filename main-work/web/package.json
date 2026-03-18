@@ -17,11 +17,12 @@
   "license": "UNLICENSED",
   "description": "StartHack 2026 web client",
   "dependencies": {
-    "@neondatabase/serverless": "^1.0.2",
+    "@neondatabase/serverless": "1.0.0",
     "@polar-sh/better-auth": "^1.8.3",
     "@polar-sh/sdk": "^0.46.4",
     "better-auth": "^1.5.5",
-    "drizzle-orm": "^0.45.1",
+    "dotenv": "16.5.0",
+    "drizzle-orm": "0.43.1",
     "inngest": "^4.0.1",
     "next": "^15.5.13",
     "react": "^19.2.4",
@@ -33,9 +34,10 @@
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "drizzle-kit": "^0.31.10",
+    "drizzle-kit": "^0.31.1",
     "eslint": "^9.39.4",
     "eslint-config-next": "^15.5.13",
+    "tsx": "^4.19.4",
     "typescript": "^5.9.3"
   }
 }
