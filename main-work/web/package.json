@@ -1,0 +1,41 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "inngest:dev": "inngest-cli@latest dev -u http://localhost:3000/api/inngest"
+  },
+  "keywords": [],
+  "author": "Peter Dike",
+  "license": "UNLICENSED",
+  "description": "StartHack 2026 web client",
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
+    "@polar-sh/better-auth": "^1.8.3",
+    "@polar-sh/sdk": "^0.46.4",
+    "better-auth": "^1.5.5",
+    "drizzle-orm": "^0.45.1",
+    "inngest": "^4.0.1",
+    "next": "^15.5.13",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "stream-chat": "^9.38.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "drizzle-kit": "^0.31.10",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^15.5.13",
+    "typescript": "^5.9.3"
+  }
+}

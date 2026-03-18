@@ -4,15 +4,17 @@ Main app code lives here.
 
 ## Folders
 
-- `app` - Expo React Native app (TypeScript)
+- `web` - Next.js 15 app (React, Better Auth, Polar)
 - `mcp-server` - local MCP server (TypeScript)
+- `app` - legacy Expo starter kept for reference
 
 ## Start
 
-App:
+Web app:
 
-- `cd app`
-- `npm start`
+- `cd web`
+- `cp .env.example .env.local`
+- `npm run dev`
 
 MCP server:
 
