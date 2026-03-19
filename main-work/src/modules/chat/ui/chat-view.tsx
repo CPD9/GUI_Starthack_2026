@@ -38,6 +38,7 @@ import { useAudioRecorder } from "@/hooks/use-audio-recorder";
 
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { SparkledBackground } from "@/components/sparkled";
+import { SplineBackground } from "@/components/spline-background";
 
 import { useTRPC } from "@/trpc/client";
 import { Input } from "@/components/ui/input";
@@ -434,6 +435,7 @@ export const ChatView = ({ userName }: Props) => {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-background to-muted/30 relative">
+      <SplineBackground className="z-0" />
       <input
         type="file"
         ref={fileInputRef}
