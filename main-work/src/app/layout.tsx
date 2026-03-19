@@ -23,12 +23,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <NuqsAdapter>
-      <TRPCReactProvider>
-        <html lang="en" suppressHydrationWarning>
-          <body
-            className={`${inter.className} antialiased`}
-          >
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${inter.className} antialiased`}
+      >
+        <NuqsAdapter>
+          <TRPCReactProvider>
             <ThemeProvider
               attribute="class"
               defaultTheme="system"
@@ -38,9 +38,9 @@ export default function RootLayout({
               <Toaster />
               {children}
             </ThemeProvider>
-          </body>
-        </html>
-      </TRPCReactProvider>
-    </NuqsAdapter>
+          </TRPCReactProvider>
+        </NuqsAdapter>
+      </body>
+    </html>
   );
 }

@@ -37,6 +37,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate file size (max 25MB — OpenAI Whisper limit)
+    if (audioFile.size > 25 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: "File too large (max 25MB)" },
+        { status: 413 }
+      );
+    }
+
+    // Validate MIME type
+    if (!audioFile.type.startsWith("audio/")) {
+      return NextResponse.json(
+        { error: "Invalid file type" },
+        { status: 400 }
+      );
+    }
+
     // Validate API key before making request
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(

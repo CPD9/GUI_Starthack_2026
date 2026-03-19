@@ -48,6 +48,12 @@ export const premiumProcedure = (entity: "meetings" | "agents") =>
       externalId: ctx.auth.user.id,
     });
 
+    const isPremium = customer.activeSubscriptions.length > 0;
+
+    if (isPremium) {
+      return next({ ctx: { ...ctx, customer } });
+    }
+
     const [userMeetings] = await db
       .select({
         count: count(meetings.id),
@@ -61,8 +67,6 @@ export const premiumProcedure = (entity: "meetings" | "agents") =>
       })
       .from(agents)
       .where(eq(agents.userId, ctx.auth.user.id));
-
-    const isPremium = customer.activeSubscriptions.length > 0;
     const isFreeAgentLimitReached = userAgents.count >= MAX_FREE_AGENTS;
     const isFreeMeetingLimitReached = userMeetings.count >= MAX_FREE_MEETINGS;
 

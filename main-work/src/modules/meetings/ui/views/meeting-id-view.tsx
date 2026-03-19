@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
@@ -45,6 +46,9 @@ export const MeetingIdView = ({ meetingId }: Props) => {
           trpc.premium.getFreeUsage.queryOptions(),
         );
         router.push("/meetings");
+      },
+      onError: (error) => {
+        toast.error(error.message);
       },
     }),
   );

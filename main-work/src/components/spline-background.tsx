@@ -1,6 +1,5 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { SparkledBackground } from "@/components/sparkled";
 
@@ -9,7 +8,6 @@ interface SplineBackgroundProps {
 }
 
 export function SplineBackground({ className }: SplineBackgroundProps) {
-  const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -26,7 +24,6 @@ export function SplineBackground({ className }: SplineBackgroundProps) {
   return (
     <div className={`absolute inset-0 z-10 overflow-hidden flex items-center justify-start pointer-events-none ${className ?? ""}`}>
       <SparkledBackground 
-        key={resolvedTheme}
         position="inline"
         dotCount={1500}
         reactRadius={200}

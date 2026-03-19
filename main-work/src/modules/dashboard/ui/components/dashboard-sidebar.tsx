@@ -166,7 +166,7 @@ export const DashboardSidebar = () => {
                 {/* Search */}
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    tooltip="Search (⌘K)"
+                    tooltip="Search (Ctrl/⌘+K)"
                     className="h-10 hover:bg-sidebar-accent/50 border border-transparent hover:border-sidebar-border"
                     onClick={() => setCommandOpen(true)}
                   >

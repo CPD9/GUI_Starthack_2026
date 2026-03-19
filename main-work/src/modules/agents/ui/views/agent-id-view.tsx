@@ -91,7 +91,7 @@ export const AgentIdView = ({ agentId }: Props) => {
             </Badge>
             <div className="flex flex-col gap-y-4">
               <p className="text-lg font-medium">Instructions</p>
-              <p className="text-neutral-800">{data.instructions}</p>
+              <p className="text-muted-foreground">{data.instructions}</p>
             </div>
           </div>
         </div>
@@ -104,7 +104,7 @@ export const AgentIdViewLoading = () => {
   return (
     <LoadingState
       title="Loading Agent"
-      description="This may take a fews econds"
+      description="This may take a few seconds"
     />
   );
 };
