@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useTheme } from "next-themes";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -36,6 +37,7 @@ import {
 import { useAudioRecorder } from "@/hooks/use-audio-recorder";
 
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { SparkledBackground } from "@/components/sparkled";
 
 import { useTRPC } from "@/trpc/client";
 import { Input } from "@/components/ui/input";
@@ -94,6 +96,7 @@ const ATTACHMENT_OPTIONS = [
 ];
 
 export const ChatView = ({ userName }: Props) => {
+  const { resolvedTheme } = useTheme();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [showChat, setShowChat] = useState(false);
@@ -108,6 +111,32 @@ export const ChatView = ({ userName }: Props) => {
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Typewriter effect state
+  const [displayedText, setDisplayedText] = useState("");
+  const [isTypingComplete, setIsTypingComplete] = useState(false);
+  const fullWelcomeText = `Hi ${userName}. I'm ready to help you explore your lab data.`;
+  
+  // Typewriter effect
+  useEffect(() => {
+    if (showChat) return; // Don't run when in chat mode
+    
+    setDisplayedText("");
+    setIsTypingComplete(false);
+    
+    let currentIndex = 0;
+    const typingInterval = setInterval(() => {
+      if (currentIndex < fullWelcomeText.length) {
+        setDisplayedText(fullWelcomeText.slice(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        setIsTypingComplete(true);
+        clearInterval(typingInterval);
+      }
+    }, 30); // Speed of typing (30ms per character)
+    
+    return () => clearInterval(typingInterval);
+  }, [showChat, userName]);
 
   // Auto-scroll to bottom when messages change
   const scrollToBottom = () => {
@@ -440,7 +469,7 @@ export const ChatView = ({ userName }: Props) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-background to-muted/30">
+    <div className="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-background to-muted/30 relative">
       <input
         type="file"
         ref={fileInputRef}
@@ -449,23 +478,24 @@ export const ChatView = ({ userName }: Props) => {
         accept=".csv,.xlsx,.json,.txt"
       />
       
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 overflow-auto">
+      <div className="flex-1 flex flex-col items-center justify-end px-4 py-8 pb-24 overflow-auto relative z-10">
         {!showChat ? (
           <>
-            <div className="flex flex-col items-center text-center max-w-2xl gap-4 mb-8">
-              <div className="flex items-center gap-2 text-primary">
-                <SparklesIcon className="size-6" />
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-                Hi {userName}. I&apos;m ready to help you explore your lab data.
-              </h1>
-              <p className="text-muted-foreground text-lg">
-                Ask questions in natural language, get data-driven insights, and
-                understand your materials testing results.
-              </p>
-            </div>
-
             <div className="w-full max-w-2xl mb-6">
+              {/* Sparkled background above the chat box */}
+              <div className="flex justify-center mb-4">
+                <SparkledBackground 
+                  position="inline"
+                  dotCount={1000}
+                  reactRadius={60}
+                  sphereRadius={35}
+                  width={150}
+                  height={150}
+                  particleColor={resolvedTheme === "dark" ? "255, 255, 255" : "240, 159, 155"}
+                  glowColor={resolvedTheme === "dark" ? "255, 255, 255" : "240, 159, 155"}
+                  className="pointer-events-auto cursor-pointer"
+                />
+              </div>
               {selectedTools.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-2 px-2">
                   {selectedTools.map((tool) => (
@@ -486,7 +516,8 @@ export const ChatView = ({ userName }: Props) => {
                 </div>
               )}
               
-              <div className="glass rounded-2xl shadow-lg border border-border/50 p-2 flex items-end gap-2">
+              <div className="glass rounded-2xl shadow-lg border border-border/50 p-4 flex flex-col gap-3">
+                <div className="flex items-end gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -521,17 +552,28 @@ export const ChatView = ({ userName }: Props) => {
                   </DropdownMenuContent>
                 </DropdownMenu>
                 
-                <Input
-                  placeholder="Ask about your lab testing data..."
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && inputValue.trim()) {
-                      handleSendMessage();
-                    }
-                  }}
-                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-base py-6"
-                />
+                <div className="flex-1 relative">
+                  {/* Typewriter text displayed inside input area */}
+                  {!inputValue && (
+                    <div className="absolute inset-0 flex items-center pointer-events-none px-3">
+                      <span className="text-xs font-mono text-muted-foreground">
+                        {displayedText}
+                        {!isTypingComplete && <span className="animate-pulse">|</span>}
+                      </span>
+                    </div>
+                  )}
+                  <Input
+                    placeholder=""
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && inputValue.trim()) {
+                        handleSendMessage();
+                      }
+                    }}
+                    className="w-full border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-base py-4"
+                  />
+                </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -605,6 +647,7 @@ export const ChatView = ({ userName }: Props) => {
                       <SendIcon className="size-5" />
                     </Button>
                   )}
+                </div>
                 </div>
               </div>
 
@@ -897,7 +940,7 @@ export const ChatView = ({ userName }: Props) => {
         )}
       </div>
 
-      <div className="px-4 py-3 flex flex-col items-center gap-2">
+      <div className="px-4 py-3 flex flex-col items-center gap-2 relative z-10">
         {showChat && (
           <Button
             variant="ghost"

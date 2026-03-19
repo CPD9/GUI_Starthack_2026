@@ -16,23 +16,27 @@ export const ThemeToggle = () => {
 
   if (!mounted) {
     return (
-      <div
-        className="h-9 w-9 bg-background text-foreground border border-border rounded-md flex items-center justify-center"
-        aria-hidden="true"
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-9 w-9"
+        disabled
       >
         <Sun className="h-4 w-4" />
-      </div>
+      </Button>
     );
   }
 
+  const isDark = resolvedTheme === "dark";
+
   return (
     <Button
-      variant="ghost"
+      variant="outline"
       size="icon"
-      className="h-9 w-9 border bg-background text-foreground border-border"
-      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      className="h-9 w-9 relative z-50"
+      onClick={() => setTheme(isDark ? "light" : "dark")}
     >
-      {resolvedTheme === "dark" ? (
+      {isDark ? (
         <Moon className="h-4 w-4" />
       ) : (
         <Sun className="h-4 w-4" />
