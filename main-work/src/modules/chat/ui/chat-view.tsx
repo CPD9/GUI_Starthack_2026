@@ -30,6 +30,7 @@ import {
   SearchIcon,
   LightbulbIcon,
   CheckCircle2Icon,
+
 } from "lucide-react";
 
 import { useAudioRecorder } from "@/hooks/use-audio-recorder";
@@ -48,6 +49,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+
 
 interface Props {
   userName: string;
@@ -895,14 +897,37 @@ export const ChatView = ({ userName }: Props) => {
         )}
       </div>
 
-      <div className="px-4 py-3 text-center">
-        <p className="text-xs text-muted-foreground">
+      <div className="px-4 py-3 flex items-center justify-between">
+        {showChat ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setShowChat(false);
+              setMessages([]);
+              setExpandedReasoning({});
+              setCurrentChatId(null);
+              setInputValue("");
+              router.replace("/chat", { scroll: false });
+            }}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <PlusIcon className="size-4" />
+            <span className="text-xs">Collapse Chat</span>
+          </Button>
+        ) : (
+          <div className="w-[140px]" />
+        )}
+        <p className="text-xs text-muted-foreground text-center flex-1">
           Your conversations may be reviewed to improve our analytics.{" "}
           <Link href="#" className="underline underline-offset-2">
             Manage activity
           </Link>
         </p>
+        <div className="w-[140px]" />
       </div>
     </div>
   );
 };
+
+
