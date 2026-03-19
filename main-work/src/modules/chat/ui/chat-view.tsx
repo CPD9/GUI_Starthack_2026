@@ -303,24 +303,22 @@ export const ChatView = ({ userName }: Props) => {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
-    
+  // Shared message send workflow
+  const sendMessageWorkflow = async (content: string) => {
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: "user",
-      content: inputValue,
+      content,
       timestamp: new Date(),
     };
     
-    const queryText = inputValue;
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInputValue("");
     setShowChat(true);
     setIsLoading(true);
     
-    const reasoningSteps = generateReasoningSteps(queryText);
+    const reasoningSteps = generateReasoningSteps(content);
     
     for (let i = 0; i < reasoningSteps.length; i++) {
       setCurrentReasoningStep(reasoningSteps[i].title);
@@ -330,7 +328,7 @@ export const ChatView = ({ userName }: Props) => {
     const assistantMessage: Message = {
       id: crypto.randomUUID(),
       role: "assistant",
-      content: `I understand you're asking about "${queryText}". I'm currently in demo mode, but I can help you analyze your lab testing data. For full functionality, please start a session with one of our Analytics Agents from the Agents page.`,
+      content: `I understand you're asking about "${content}". I'm currently in demo mode, but I can help you analyze your lab testing data. For full functionality, please start a session with one of our Analytics Agents from the Agents page.`,
       timestamp: new Date(),
       reasoning: reasoningSteps,
     };
@@ -344,50 +342,17 @@ export const ChatView = ({ userName }: Props) => {
     await saveChat(allMessages);
   };
 
+  const handleSendMessage = async () => {
+    if (!inputValue.trim()) return;
+    await sendMessageWorkflow(inputValue);
+  };
+
   // Auto-send voice message after transcription
   useEffect(() => {
     if (pendingVoiceMessage) {
-      const sendVoiceMessage = async () => {
-        const userMessage: Message = {
-          id: crypto.randomUUID(),
-          role: "user",
-          content: pendingVoiceMessage,
-          timestamp: new Date(),
-        };
-        
-        const queryText = pendingVoiceMessage;
-        const newMessages = [...messages, userMessage];
-        setMessages(newMessages);
-        setInputValue("");
-        setShowChat(true);
-        setIsLoading(true);
-        setPendingVoiceMessage(null);
-        
-        const reasoningSteps = generateReasoningSteps(queryText);
-        
-        for (let i = 0; i < reasoningSteps.length; i++) {
-          setCurrentReasoningStep(reasoningSteps[i].title);
-          await new Promise(resolve => setTimeout(resolve, 300));
-        }
-        
-        const assistantMessage: Message = {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: `I understand you're asking about "${queryText}". I'm currently in demo mode, but I can help you analyze your lab testing data. For full functionality, please start a session with one of our Analytics Agents from the Agents page.`,
-          timestamp: new Date(),
-          reasoning: reasoningSteps,
-        };
-        
-        const allMessages = [...newMessages, assistantMessage];
-        setMessages(allMessages);
-        setIsLoading(false);
-        setCurrentReasoningStep(null);
-        setExpandedReasoning((prev) => ({ ...prev, [assistantMessage.id]: false }));
-        
-        await saveChat(allMessages);
-      };
-      
-      sendVoiceMessage();
+      const msg = pendingVoiceMessage;
+      setPendingVoiceMessage(null);
+      sendMessageWorkflow(msg);
     }
   }, [pendingVoiceMessage]);
 

@@ -16,14 +16,12 @@ export const ThemeToggle = () => {
 
   if (!mounted) {
     return (
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-9 w-9"
-        disabled
+      <span
+        className="inline-flex items-center justify-center h-9 w-9 rounded-md border border-input bg-background"
+        aria-hidden="true"
       >
         <Sun className="h-4 w-4" />
-      </Button>
+      </span>
     );
   }
 
