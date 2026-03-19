@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 
 // Validate API key exists at startup
 if (!process.env.OPENAI_API_KEY) {
-  console.error("OPENAI_API_KEY environment variable is not set");
+  throw new Error("OPENAI_API_KEY environment variable is not set");
 }
 
 const openai = new OpenAI({
@@ -58,10 +58,7 @@ export async function POST(request: NextRequest) {
       success: true,
     });
   } catch (error) {
-    console.error("Transcription error:", error);
-    
     if (error instanceof OpenAI.APIError) {
-      console.error("OpenAI API error:", error.message);
       return NextResponse.json(
         { error: "External service error. Please try again later." },
         { status: error.status || 500 }

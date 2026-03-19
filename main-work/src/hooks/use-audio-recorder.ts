@@ -114,7 +114,6 @@ export function useAudioRecorder({
       mediaRecorder.onerror = (event) => {
         const error = new Error("MediaRecorder error occurred");
         onError?.(error);
-        console.error("MediaRecorder error:", event);
       };
 
       // Start recording
@@ -129,7 +128,6 @@ export function useAudioRecorder({
     } catch (error) {
       const err = error instanceof Error ? error : new Error("Failed to start recording");
       onError?.(err);
-      console.error("Failed to start recording:", error);
     }
   }, [onRecordingComplete, onError]);
 

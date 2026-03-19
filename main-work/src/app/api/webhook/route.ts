@@ -18,7 +18,11 @@ import { inngest } from "@/inngest/client";
 import { generateAvatarUri } from "@/lib/avatar";
 import { streamChat } from "@/lib/stream-chat";
 
-const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error("OPENAI_API_KEY is not set");
+}
+
+const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 function verifySignatureWithSDK(body: string, signature: string): boolean {
   return streamVideo.verifyWebhook(body, signature);

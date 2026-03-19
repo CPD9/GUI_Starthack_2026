@@ -9,8 +9,8 @@ export const DashboardNavbar = () => {
       <div className="w-10" />
       <div className="flex-1 flex justify-center">
         <ThemedImage
-          lightSrc="/Analytics-logo-light.png"
-          darkSrc="/Analytics-logo-dark.png"
+          lightSrc="/ZR-logo-light-mode.png"
+          darkSrc="/ZR-logo-dark-mode.png"
           width={120}
           height={40}
           alt="Analytics Logo"
