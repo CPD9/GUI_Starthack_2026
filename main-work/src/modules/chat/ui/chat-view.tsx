@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useTheme } from "next-themes";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -30,16 +31,20 @@ import {
   SearchIcon,
   LightbulbIcon,
   CheckCircle2Icon,
+
 } from "lucide-react";
 
 import { useAudioRecorder } from "@/hooks/use-audio-recorder";
 
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { SparkledBackground } from "@/components/sparkled";
+import { SplineBackground } from "@/components/spline-background";
 
 import { useTRPC } from "@/trpc/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { GeneratedAvatar } from "@/components/generated-avatar";
+import { ThemedImage } from "@/components/themed-image";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,6 +53,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+
 
 interface Props {
   userName: string;
@@ -73,8 +79,6 @@ const SUGGESTION_BUBBLES = [
   { label: "Analyze test data", icon: ImageIcon, href: "/agents" },
   { label: "Compare batches", icon: PenLineIcon, href: "/agents" },
   { label: "Explain results", icon: BookOpenIcon, href: "/agents" },
-  { label: "Quick insights", icon: ZapIcon, href: "/agents" },
-  { label: "Talk to expert", icon: SparklesIcon, href: "/agents" },
 ];
 
 const TOOLS_OPTIONS = [
@@ -92,6 +96,7 @@ const ATTACHMENT_OPTIONS = [
 ];
 
 export const ChatView = ({ userName }: Props) => {
+  const { resolvedTheme } = useTheme();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [showChat, setShowChat] = useState(false);
@@ -106,6 +111,32 @@ export const ChatView = ({ userName }: Props) => {
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Typewriter effect state
+  const [displayedText, setDisplayedText] = useState("");
+  const [isTypingComplete, setIsTypingComplete] = useState(false);
+  const fullWelcomeText = `Hi ${userName}. I'm ready to help you explore your lab data.`;
+  
+  // Typewriter effect
+  useEffect(() => {
+    if (showChat) return; // Don't run when in chat mode
+    
+    setDisplayedText("");
+    setIsTypingComplete(false);
+    
+    let currentIndex = 0;
+    const typingInterval = setInterval(() => {
+      if (currentIndex < fullWelcomeText.length) {
+        setDisplayedText(fullWelcomeText.slice(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        setIsTypingComplete(true);
+        clearInterval(typingInterval);
+      }
+    }, 30); // Speed of typing (30ms per character)
+    
+    return () => clearInterval(typingInterval);
+  }, [showChat, userName]);
 
   // Auto-scroll to bottom when messages change
   const scrollToBottom = () => {
@@ -273,24 +304,22 @@ export const ChatView = ({ userName }: Props) => {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
-    
+  // Shared message send workflow
+  const sendMessageWorkflow = useCallback(async (content: string) => {
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: "user",
-      content: inputValue,
+      content,
       timestamp: new Date(),
     };
     
-    const queryText = inputValue;
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInputValue("");
     setShowChat(true);
     setIsLoading(true);
     
-    const reasoningSteps = generateReasoningSteps(queryText);
+    const reasoningSteps = generateReasoningSteps(content);
     
     for (let i = 0; i < reasoningSteps.length; i++) {
       setCurrentReasoningStep(reasoningSteps[i].title);
@@ -300,7 +329,7 @@ export const ChatView = ({ userName }: Props) => {
     const assistantMessage: Message = {
       id: crypto.randomUUID(),
       role: "assistant",
-      content: `I understand you're asking about "${queryText}". I'm currently in demo mode, but I can help you analyze your lab testing data. For full functionality, please start a session with one of our Analytics Agents from the Agents page.`,
+      content: `I understand you're asking about "${content}". I'm currently in demo mode, but I can help you analyze your lab testing data. For full functionality, please start a session with one of our Analytics Agents from the Agents page.`,
       timestamp: new Date(),
       reasoning: reasoningSteps,
     };
@@ -312,54 +341,21 @@ export const ChatView = ({ userName }: Props) => {
     setExpandedReasoning((prev) => ({ ...prev, [assistantMessage.id]: false }));
     
     await saveChat(allMessages);
+  }, [messages, generateReasoningSteps, saveChat]);
+
+  const handleSendMessage = async () => {
+    if (!inputValue.trim()) return;
+    await sendMessageWorkflow(inputValue);
   };
 
   // Auto-send voice message after transcription
   useEffect(() => {
     if (pendingVoiceMessage) {
-      const sendVoiceMessage = async () => {
-        const userMessage: Message = {
-          id: crypto.randomUUID(),
-          role: "user",
-          content: pendingVoiceMessage,
-          timestamp: new Date(),
-        };
-        
-        const queryText = pendingVoiceMessage;
-        const newMessages = [...messages, userMessage];
-        setMessages(newMessages);
-        setInputValue("");
-        setShowChat(true);
-        setIsLoading(true);
-        setPendingVoiceMessage(null);
-        
-        const reasoningSteps = generateReasoningSteps(queryText);
-        
-        for (let i = 0; i < reasoningSteps.length; i++) {
-          setCurrentReasoningStep(reasoningSteps[i].title);
-          await new Promise(resolve => setTimeout(resolve, 300));
-        }
-        
-        const assistantMessage: Message = {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: `I understand you're asking about "${queryText}". I'm currently in demo mode, but I can help you analyze your lab testing data. For full functionality, please start a session with one of our Analytics Agents from the Agents page.`,
-          timestamp: new Date(),
-          reasoning: reasoningSteps,
-        };
-        
-        const allMessages = [...newMessages, assistantMessage];
-        setMessages(allMessages);
-        setIsLoading(false);
-        setCurrentReasoningStep(null);
-        setExpandedReasoning((prev) => ({ ...prev, [assistantMessage.id]: false }));
-        
-        await saveChat(allMessages);
-      };
-      
-      sendVoiceMessage();
+      const msg = pendingVoiceMessage;
+      setPendingVoiceMessage(null);
+      sendMessageWorkflow(msg);
     }
-  }, [pendingVoiceMessage, messages, saveChat, generateReasoningSteps]);
+  }, [pendingVoiceMessage, sendMessageWorkflow]);
 
   // Transcribe audio using OpenAI Whisper
   const transcribeAudio = useCallback(async (audioBlob: Blob) => {
@@ -438,7 +434,8 @@ export const ChatView = ({ userName }: Props) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-background to-muted/30">
+    <div className="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-background to-muted/30 relative">
+      <SplineBackground className="z-0" />
       <input
         type="file"
         ref={fileInputRef}
@@ -447,23 +444,23 @@ export const ChatView = ({ userName }: Props) => {
         accept=".csv,.xlsx,.json,.txt"
       />
       
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 overflow-auto">
+      <div className="flex-1 flex flex-col items-center justify-end px-4 py-8 pb-24 overflow-auto relative z-10">
         {!showChat ? (
           <>
-            <div className="flex flex-col items-center text-center max-w-2xl gap-4 mb-8">
-              <div className="flex items-center gap-2 text-primary">
-                <SparklesIcon className="size-6" />
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-                Hi {userName}. I&apos;m ready to help you explore your lab data.
-              </h1>
-              <p className="text-muted-foreground text-lg">
-                Ask questions in natural language, get data-driven insights, and
-                understand your materials testing results.
-              </p>
-            </div>
-
             <div className="w-full max-w-2xl mb-6">
+              {/* Sparkled background above the chat box */}
+              <div className="flex justify-center mb-4">
+                <SparkledBackground 
+                  position="inline"
+                  dotCount={1000}
+                  reactRadius={60}
+                  sphereRadius={35}
+                  width={150}
+                  height={150}
+                  particleColor={resolvedTheme === "dark" ? "255, 255, 255" : "240, 159, 155"}
+                  className="pointer-events-auto cursor-pointer"
+                />
+              </div>
               {selectedTools.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-2 px-2">
                   {selectedTools.map((tool) => (
@@ -484,13 +481,13 @@ export const ChatView = ({ userName }: Props) => {
                 </div>
               )}
               
-              <div className="glass rounded-2xl shadow-lg border border-border/50 p-2 flex items-end gap-2">
+              <div className="flex items-center gap-1 rounded-full border border-border/50 bg-muted/50 backdrop-blur-sm px-2 py-1 shadow-sm">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="shrink-0 rounded-xl"
+                      className="shrink-0 rounded-full"
                     >
                       <PlusIcon className="size-5" />
                     </Button>
@@ -519,17 +516,28 @@ export const ChatView = ({ userName }: Props) => {
                   </DropdownMenuContent>
                 </DropdownMenu>
                 
-                <Input
-                  placeholder="Ask about your lab testing data..."
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && inputValue.trim()) {
-                      handleSendMessage();
-                    }
-                  }}
-                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-base py-6"
-                />
+                <div className="flex-1 relative">
+                  {/* Typewriter text displayed inside input area */}
+                  {!inputValue && (
+                    <div className="absolute inset-0 flex items-center pointer-events-none px-3">
+                      <span className="text-xs font-mono text-muted-foreground">
+                        {displayedText}
+                        {!isTypingComplete && <span className="animate-pulse">|</span>}
+                      </span>
+                    </div>
+                  )}
+                  <Input
+                    placeholder=""
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && inputValue.trim()) {
+                        handleSendMessage();
+                      }
+                    }}
+                    className="w-full border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-base h-10"
+                  />
+                </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -575,7 +583,7 @@ export const ChatView = ({ userName }: Props) => {
                   <Button 
                     variant="ghost" 
                     size={(isRecording || isTranscribing) ? "default" : "icon"}
-                    className={`rounded-xl transition-all duration-200 ${isRecording ? 'bg-red-500/20 text-red-500 animate-pulse gap-2 px-4' : isTranscribing ? 'bg-blue-500/10 text-blue-500 gap-2 px-4' : ''}`}
+                    className={`rounded-full transition-all duration-200 ${isRecording ? 'bg-red-500/20 text-red-500 animate-pulse gap-2 px-4' : isTranscribing ? 'bg-blue-500/10 text-blue-500 gap-2 px-4' : ''}`}
                     onClick={handleMicToggle}
                     disabled={isTranscribing}
                   >
@@ -597,7 +605,7 @@ export const ChatView = ({ userName }: Props) => {
                   {inputValue.trim() && (
                     <Button 
                       size="icon" 
-                      className="rounded-xl"
+                      className="rounded-full"
                       onClick={handleSendMessage}
                     >
                       <SendIcon className="size-5" />
@@ -776,13 +784,13 @@ export const ChatView = ({ userName }: Props) => {
             </div>
 
             {/* Chat Input */}
-            <div className="glass rounded-2xl shadow-lg border border-border/50 p-2 flex items-end gap-2 mt-4">
+            <div className="flex items-center gap-1 mt-4 rounded-full border border-border/50 bg-muted/50 backdrop-blur-sm px-2 py-1 shadow-sm">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="shrink-0 rounded-xl"
+                    className="shrink-0 rounded-full"
                   >
                     <PlusIcon className="size-5" />
                   </Button>
@@ -820,7 +828,7 @@ export const ChatView = ({ userName }: Props) => {
                     handleSendMessage();
                   }
                 }}
-                className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-base py-6"
+                className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-base h-10"
               />
               <div className="flex items-center gap-1 shrink-0">
                 <DropdownMenu>
@@ -867,7 +875,7 @@ export const ChatView = ({ userName }: Props) => {
                 <Button
                   variant="ghost"
                   size={(isRecording || isTranscribing) ? "default" : "icon"}
-                  className={`rounded-xl transition-all duration-200 ${isRecording ? "bg-red-500/20 text-red-500 animate-pulse gap-2 px-4" : isTranscribing ? "bg-blue-500/10 text-blue-500 gap-2 px-4" : ""}`}
+                  className={`rounded-full transition-all duration-200 ${isRecording ? "bg-red-500/20 text-red-500 animate-pulse gap-2 px-4" : isTranscribing ? "bg-blue-500/10 text-blue-500 gap-2 px-4" : ""}`}
                   onClick={handleMicToggle}
                   disabled={isTranscribing}
                 >
@@ -886,7 +894,7 @@ export const ChatView = ({ userName }: Props) => {
                   )}
                 </Button>
 
-                <Button size="icon" className="rounded-xl" onClick={handleSendMessage} disabled={!inputValue.trim()}>
+                <Button size="icon" className="rounded-full" onClick={handleSendMessage} disabled={!inputValue.trim()}>
                   <SendIcon className="size-5" />
                 </Button>
               </div>
@@ -895,8 +903,34 @@ export const ChatView = ({ userName }: Props) => {
         )}
       </div>
 
-      <div className="px-4 py-3 text-center">
-        <p className="text-xs text-muted-foreground">
+      <div className="px-4 py-3 flex flex-col items-center gap-2 relative z-10">
+        {showChat && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setShowChat(false);
+              setMessages([]);
+              setExpandedReasoning({});
+              setCurrentChatId(null);
+              setInputValue("");
+              router.replace("/chat", { scroll: false });
+            }}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <PlusIcon className="size-4" />
+            <span className="text-xs">Collapse Chat</span>
+          </Button>
+        )}
+        <ThemedImage
+          lightSrc="/logo-transparent.png"
+          darkSrc="/logo-transparent-dark-mode.png"
+          alt="Zwick Roell Logo"
+          width={100}
+          height={28}
+          className="object-contain opacity-70"
+        />
+        <p className="text-xs text-muted-foreground text-center">
           Your conversations may be reviewed to improve our analytics.{" "}
           <Link href="#" className="underline underline-offset-2">
             Manage activity
@@ -906,3 +940,5 @@ export const ChatView = ({ userName }: Props) => {
     </div>
   );
 };
+
+

@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@splinetool/react-spline": "^4.1.0"
+  },
+  "devDependencies": {
+    "caniuse-lite": "^1.0.30001780"
+  }
+}
