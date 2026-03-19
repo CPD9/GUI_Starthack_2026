@@ -125,10 +125,10 @@ export const DashboardSidebar = () => {
         </SidebarGroup>
         
         {/* Chat History, Upgrade & Free Trial - Combined Section */}
-        <div className="px-4 py-1">
+        <div className="px-4 py-0">
           <Separator className="opacity-20 text-sidebar-foreground/50" />
         </div>
-        <SidebarGroup className="py-0">
+        <SidebarGroup className="py-0 -mt-1">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
