@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { BotIcon, VideoIcon, BarChart3Icon, WorkflowIcon, SparklesIcon, PlusIcon, MessageSquareIcon, Loader2Icon, Trash2Icon, HistoryIcon } from "lucide-react";
+import { BotIcon, VideoIcon, BarChart3Icon, WorkflowIcon, SparklesIcon, PlusIcon, MessageSquareIcon, Loader2Icon, Trash2Icon, HistoryIcon, AlertCircleIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -24,7 +25,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -63,22 +63,35 @@ const firstSection = [
 
 export const DashboardSidebar = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const [historyPage, setHistoryPage] = useState(1);
   
   const currentChatId = searchParams.get("id");
 
   // Fetch chat history
-  const { data: chatHistoryData, isLoading: isLoadingHistory } = useQuery(
-    trpc.chat.getMany.queryOptions({ pageSize: 50 })
+  const {
+    data: chatHistoryData,
+    isLoading: isLoadingHistory,
+    isError: isErrorHistory,
+    refetch: refetchHistory,
+  } = useQuery(
+    trpc.chat.getMany.queryOptions({ page: historyPage, pageSize: 20 })
   );
   const chatHistoryList = chatHistoryData?.items ?? [];
+  const totalHistoryPages = chatHistoryData?.totalPages ?? 1;
+  const hasOlderPages = historyPage < totalHistoryPages;
+  const hasNewerPages = historyPage > 1;
 
   // Delete chat mutation
   const deleteChatMutation = useMutation(
     trpc.chat.remove.mutationOptions({
-      onSuccess: () => {
+      onSuccess: (removedChat) => {
+        if (currentChatId === removedChat.id) {
+          router.push("/chat");
+        }
         queryClient.invalidateQueries({ queryKey: trpc.chat.getMany.queryKey() });
       },
     })
@@ -155,6 +168,19 @@ export const DashboardSidebar = () => {
                         <div className="flex items-center justify-center py-8">
                           <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
                         </div>
+                      ) : isErrorHistory ? (
+                        <div className="text-center py-8 text-muted-foreground space-y-3">
+                          <AlertCircleIcon className="size-10 mx-auto text-destructive/80" />
+                          <p className="text-sm">Could not load chat history</p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => refetchHistory()}
+                          >
+                            Retry
+                          </Button>
+                        </div>
                       ) : chatHistoryList.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">
                           <MessageSquareIcon className="size-10 mx-auto mb-3 opacity-50" />
@@ -209,6 +235,37 @@ export const DashboardSidebar = () => {
                           ))}
                         </div>
                       )}
+                      {!isLoadingHistory && !isErrorHistory && totalHistoryPages > 1 ? (
+                        <div className="mt-4 flex items-center justify-between gap-2 border-t pt-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setHistoryPage((prev) => Math.max(1, prev - 1))}
+                            disabled={!hasNewerPages}
+                          >
+                            <ChevronLeftIcon className="size-4" />
+                            Newer
+                          </Button>
+                          <p className="text-xs text-muted-foreground">
+                            Page {historyPage} of {totalHistoryPages}
+                          </p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setHistoryPage((prev) =>
+                                Math.min(totalHistoryPages, prev + 1)
+                              )
+                            }
+                            disabled={!hasOlderPages}
+                          >
+                            Older
+                            <ChevronRightIcon className="size-4" />
+                          </Button>
+                        </div>
+                      ) : null}
                     </ScrollArea>
                   </DialogContent>
                 </Dialog>
