@@ -574,20 +574,20 @@ export const ChatView = ({ userName }: Props) => {
                   
                   <Button 
                     variant="ghost" 
-                    size={isRecording ? "default" : "icon"}
-                    className={`rounded-xl transition-colors ${isRecording ? 'bg-red-500/20 text-red-500 animate-pulse gap-2 px-3' : isTranscribing ? 'bg-blue-500/20 text-blue-500' : ''}`}
+                    size={(isRecording || isTranscribing) ? "default" : "icon"}
+                    className={`rounded-xl transition-all duration-200 ${isRecording ? 'bg-red-500/20 text-red-500 animate-pulse gap-2 px-4' : isTranscribing ? 'bg-blue-500/10 text-blue-500 gap-2 px-4' : ''}`}
                     onClick={handleMicToggle}
                     disabled={isTranscribing}
                   >
                     {isTranscribing ? (
                       <>
-                        <Loader2Icon className="size-5 animate-spin" />
-                        <span className="text-xs">Transcribing...</span>
+                        <Loader2Icon className="size-4 animate-spin" />
+                        <span className="text-sm font-medium whitespace-nowrap">Transcribing</span>
                       </>
                     ) : isRecording ? (
                       <>
-                        <MicOffIcon className="size-5" />
-                        <span className="text-xs font-mono">{formatTime(recordingTime)}</span>
+                        <MicOffIcon className="size-4" />
+                        <span className="text-sm font-mono">{formatTime(recordingTime)}</span>
                       </>
                     ) : (
                       <MicIcon className="size-5" />
@@ -866,20 +866,20 @@ export const ChatView = ({ userName }: Props) => {
 
                 <Button
                   variant="ghost"
-                  size={isRecording ? "default" : "icon"}
-                  className={`rounded-xl transition-colors ${isRecording ? "bg-red-500/20 text-red-500 animate-pulse gap-2 px-3" : isTranscribing ? "bg-blue-500/20 text-blue-500" : ""}`}
+                  size={(isRecording || isTranscribing) ? "default" : "icon"}
+                  className={`rounded-xl transition-all duration-200 ${isRecording ? "bg-red-500/20 text-red-500 animate-pulse gap-2 px-4" : isTranscribing ? "bg-blue-500/10 text-blue-500 gap-2 px-4" : ""}`}
                   onClick={handleMicToggle}
                   disabled={isTranscribing}
                 >
                   {isTranscribing ? (
                     <>
-                      <Loader2Icon className="size-5 animate-spin" />
-                      <span className="text-xs">Transcribing...</span>
+                      <Loader2Icon className="size-4 animate-spin" />
+                      <span className="text-sm font-medium whitespace-nowrap">Transcribing</span>
                     </>
                   ) : isRecording ? (
                     <>
-                      <MicOffIcon className="size-5" />
-                      <span className="text-xs font-mono">{formatTime(recordingTime)}</span>
+                      <MicOffIcon className="size-4" />
+                      <span className="text-sm font-mono">{formatTime(recordingTime)}</span>
                     </>
                   ) : (
                     <MicIcon className="size-5" />
