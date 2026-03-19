@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useTheme } from "next-themes";
 import {
   BarChart3Icon,
   NetworkIcon,
@@ -11,14 +10,9 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SparkledBackground } from "@/components/sparkled";
 
 export const VisualizationsView = () => {
-  const { resolvedTheme } = useTheme();
   const [selectedViz, setSelectedViz] = useState<string | null>(null);
-  const [showSparkle, setShowSparkle] = useState(true);
-  const sparkleColor =
-    resolvedTheme === "light" ? "15, 23, 42" : "255, 255, 255";
 
   return (
     <div className="flex-1 p-4 md:p-8 flex flex-col gap-6 relative">
@@ -109,25 +103,10 @@ export const VisualizationsView = () => {
               </p>
             </div>
           ) : (
-            <div className="h-[400px] flex items-center justify-start rounded-lg border border-dashed border-border">
-              {showSparkle ? (
-                <SparkledBackground
-                  position="inline"
-                  dotCount={800}
-                  reactRadius={100}
-                  sphereRadius={80}
-                  width={360}
-                  height={360}
-                  particleColor={sparkleColor}
-                  onClick={() => setShowSparkle(false)}
-                  className="hover:opacity-80 transition-opacity"
-                  globalMouseTracking={true}
-                />
-              ) : (
-                <p className="text-muted-foreground">
-                  Click a card above to create a visualization
-                </p>
-              )}
+            <div className="h-[400px] flex items-center justify-center rounded-lg border border-dashed border-border">
+              <p className="text-muted-foreground">
+                Click a card above to create a visualization
+              </p>
             </div>
           )}
         </CardContent>
