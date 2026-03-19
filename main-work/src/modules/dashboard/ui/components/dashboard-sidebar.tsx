@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { VideoIcon, BarChart3Icon, WorkflowIcon, SparklesIcon, PlusIcon, MessageSquareIcon, Loader2Icon, Trash2Icon, HistoryIcon, PanelLeftCloseIcon, PanelLeftIcon, SearchIcon } from "lucide-react";
+import { BotIcon, VideoIcon, BarChart3Icon, WorkflowIcon, SparklesIcon, PlusIcon, MessageSquareIcon, Loader2Icon, Trash2Icon, HistoryIcon, AlertCircleIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { ThemedImage } from "@/components/themed-image";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -24,34 +25,27 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar";
-
-import { DashboardCommand } from "./dashboard-command";
 
 import { DashboardUserButton } from "./dashboard-user-button";
 import { DashboardTrial } from "./dashboard-trial";
 
-const topSection = [
+const firstSection = [
   {
     icon: PlusIcon,
     label: "New Conversation",
     href: "/chat",
   },
-];
-
-const bottomSection = [
   {
     icon: VideoIcon,
     label: "Sessions",
     href: "/meetings",
   },
   {
-    icon: SparklesIcon,
+    icon: BotIcon,
     label: "Analytics Agents",
     href: "/agents",
   },
@@ -73,37 +67,30 @@ export const DashboardSidebar = () => {
   const searchParams = useSearchParams();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const { state, toggleSidebar, isMobile } = useSidebar();
-  const [commandOpen, setCommandOpen] = useState(false);
+  const [historyPage, setHistoryPage] = useState(1);
   
   const currentChatId = searchParams.get("id");
-  const isCollapsed = state === "collapsed";
-
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.repeat) return;
-      if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setCommandOpen(true);
-      }
-    };
-
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, []);
 
   // Fetch chat history
-  const { data: chatHistoryData, isLoading: isLoadingHistory, isError: isChatHistoryError, refetch: refetchChatHistory } = useQuery(
-    trpc.chat.getMany.queryOptions({ pageSize: 50 })
+  const {
+    data: chatHistoryData,
+    isLoading: isLoadingHistory,
+    isError: isErrorHistory,
+    refetch: refetchHistory,
+  } = useQuery(
+    trpc.chat.getMany.queryOptions({ page: historyPage, pageSize: 20 })
   );
   const chatHistoryList = chatHistoryData?.items ?? [];
+  const totalHistoryPages = chatHistoryData?.totalPages ?? 1;
+  const hasOlderPages = historyPage < totalHistoryPages;
+  const hasNewerPages = historyPage > 1;
 
   // Delete chat mutation
   const deleteChatMutation = useMutation(
     trpc.chat.remove.mutationOptions({
-      onSuccess: (_data, variables) => {
-        if (variables.id === currentChatId) {
-          router.replace("/chat");
+      onSuccess: (removedChat) => {
+        if (currentChatId === removedChat.id) {
+          router.push("/chat");
         }
         queryClient.invalidateQueries({ queryKey: trpc.chat.getMany.queryKey() });
       },
@@ -111,109 +98,56 @@ export const DashboardSidebar = () => {
   );
 
   return (
-    <>
-      <DashboardCommand open={commandOpen} setOpen={setCommandOpen} />
-      <Sidebar collapsible="icon">
-        <SidebarHeader className="p-2">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={
-                isMobile
-                  ? "Toggle sidebar"
-                  : isCollapsed
-                    ? "Expand sidebar"
-                    : "Collapse sidebar"
-              }
-              className="size-8 hover:bg-sidebar-accent/50"
-              onClick={toggleSidebar}
-            >
-              {(isCollapsed || isMobile)
-                ? <PanelLeftIcon className="size-4" />
-                : <PanelLeftCloseIcon className="size-4" />
-              }
-            </Button>
-            <div className="flex-1" />
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {/* New Conversation */}
-                {topSection.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      tooltip={item.label}
-                      className={cn(
-                        "h-10 hover:bg-sidebar-accent/50 border border-transparent hover:border-sidebar-border",
-                        (pathname === item.href || pathname.startsWith(item.href + "/")) && "bg-sidebar-accent border-sidebar-border"
-                      )}
-                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
-                    >
-                      <Link href={item.href}>
-                        <item.icon className="size-5" />
-                        <span className="text-sm font-medium tracking-tight">
-                          {item.label}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-
-                {/* Search */}
-                <SidebarMenuItem>
+    <Sidebar>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <div className="flex items-center justify-center py-4 px-4">
+              <ThemedImage
+                lightSrc="/logo-transparent.png"
+                darkSrc="/logo-transparent-dark-mode.png"
+                alt="Zwick Roell Logo"
+                width={140}
+                height={40}
+                className="object-contain"
+              />
+            </div>
+            <Separator className="opacity-20 text-sidebar-foreground/50 mb-2" />
+            <SidebarMenu>
+              {firstSection.map((item) => (
+                <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
-                    tooltip="Search (Ctrl/⌘+K)"
-                    className="h-10 hover:bg-sidebar-accent/50 border border-transparent hover:border-sidebar-border"
-                    onClick={() => setCommandOpen(true)}
+                    asChild
+                    className={cn(
+                      "h-10 hover:bg-sidebar-accent/50 border border-transparent hover:border-sidebar-border",
+                      (pathname === item.href || pathname.startsWith(item.href + "/")) && "bg-sidebar-accent border-sidebar-border"
+                    )}
+                    isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
                   >
-                    <SearchIcon className="size-5" />
-                    <span className="text-sm font-medium tracking-tight">
-                      Search
-                    </span>
+                    <Link href={item.href}>
+                      <item.icon className="size-5" />
+                      <span className="text-sm font-medium tracking-tight">
+                        {item.label}
+                      </span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-
-                {/* Sessions and other items */}
-                {bottomSection.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      tooltip={item.label}
-                      className={cn(
-                        "h-10 hover:bg-sidebar-accent/50 border border-transparent hover:border-sidebar-border",
-                        (pathname === item.href || pathname.startsWith(item.href + "/")) && "bg-sidebar-accent border-sidebar-border"
-                      )}
-                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
-                    >
-                      <Link href={item.href}>
-                        <item.icon className="size-5" />
-                        <span className="text-sm font-medium tracking-tight">
-                          {item.label}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
         
         {/* Chat History, Upgrade & Free Trial - Combined Section */}
         <div className="px-4 py-0">
           <Separator className="opacity-20 text-sidebar-foreground/50" />
         </div>
-        <SidebarGroup className="py-0 -mt-4 ">
+        <SidebarGroup className="py-0 -mt-4">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <Dialog>
                   <DialogTrigger asChild>
                     <SidebarMenuButton
-                      tooltip="Chat History"
                       className="h-10 hover:bg-sidebar-accent/50 border border-transparent hover:border-sidebar-border cursor-pointer"
                     >
                       <HistoryIcon className="size-5" />
@@ -234,11 +168,17 @@ export const DashboardSidebar = () => {
                         <div className="flex items-center justify-center py-8">
                           <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
                         </div>
-                      ) : isChatHistoryError ? (
-                        <div className="text-center py-8">
-                          <p className="text-sm text-destructive">Failed to load chat history</p>
-                          <Button variant="ghost" size="sm" onClick={() => refetchChatHistory()} className="mt-2">
-                            Try again
+                      ) : isErrorHistory ? (
+                        <div className="text-center py-8 text-muted-foreground space-y-3">
+                          <AlertCircleIcon className="size-10 mx-auto text-destructive/80" />
+                          <p className="text-sm">Could not load chat history</p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => refetchHistory()}
+                          >
+                            Retry
                           </Button>
                         </div>
                       ) : chatHistoryList.length === 0 ? (
@@ -285,7 +225,7 @@ export const DashboardSidebar = () => {
                                   }
                                 }}
                               >
-                                {deleteChatMutation.isPending ? (
+                                {deleteChatMutation.isPending && deleteChatMutation.variables?.id === chat.id ? (
                                   <Loader2Icon className="size-4 animate-spin" />
                                 ) : (
                                   <Trash2Icon className="size-4 text-destructive" />
@@ -295,6 +235,37 @@ export const DashboardSidebar = () => {
                           ))}
                         </div>
                       )}
+                      {!isLoadingHistory && !isErrorHistory && totalHistoryPages > 1 ? (
+                        <div className="mt-4 flex items-center justify-between gap-2 border-t pt-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setHistoryPage((prev) => Math.max(1, prev - 1))}
+                            disabled={!hasNewerPages}
+                          >
+                            <ChevronLeftIcon className="size-4" />
+                            Newer
+                          </Button>
+                          <p className="text-xs text-muted-foreground">
+                            Page {historyPage} of {totalHistoryPages}
+                          </p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setHistoryPage((prev) =>
+                                Math.min(totalHistoryPages, prev + 1)
+                              )
+                            }
+                            disabled={!hasOlderPages}
+                          >
+                            Older
+                            <ChevronRightIcon className="size-4" />
+                          </Button>
+                        </div>
+                      ) : null}
                     </ScrollArea>
                   </DialogContent>
                 </Dialog>
@@ -302,7 +273,6 @@ export const DashboardSidebar = () => {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  tooltip="Upgrade"
                   className={cn(
                     "h-10 hover:bg-sidebar-accent/50 border border-transparent hover:border-sidebar-border",
                     (pathname === "/upgrade" || pathname.startsWith("/upgrade/")) && "bg-sidebar-accent border-sidebar-border"
@@ -319,16 +289,16 @@ export const DashboardSidebar = () => {
               </SidebarMenuItem>
             </SidebarMenu>
             {/* Free Trial Usage */}
-            <div className={cn("mt-1", isCollapsed ? "px-0" : "px-2")}>
+            <div className="mt-1 px-2">
               <DashboardTrial />
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="text-sidebar-foreground">
+
         <DashboardUserButton />
       </SidebarFooter>
     </Sidebar>
-    </>
   )
 };
