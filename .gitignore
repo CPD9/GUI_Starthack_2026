@@ -1,2 +1,5 @@
 tutorial-inspiration/
 .DS_Store
+
+# Local Docker export archives
+main-work/txp-mongo-*.tar

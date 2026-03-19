@@ -49,3 +49,6 @@ temp/
 .npm-cache/
 app/.npm-cache/
 mcp-server/.npm-cache/
+
+# Large local Docker exports
+txp-mongo-*.tar
