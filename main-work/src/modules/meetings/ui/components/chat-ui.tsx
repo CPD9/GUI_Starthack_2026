@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import type { Channel as StreamChannel } from "stream-chat";
 import {
@@ -26,7 +26,6 @@ interface ChatUIProps {
 
 export const ChatUI = ({
   meetingId,
-  meetingName,
   userId,
   userName,
   userImage,
@@ -36,7 +35,6 @@ export const ChatUI = ({
     trpc.meetings.generateChatToken.mutationOptions(),
   );
 
-  const [channel, setChannel] = useState<StreamChannel>();
   const client = useCreateChatClient({
     apiKey: process.env.NEXT_PUBLIC_STREAM_CHAT_API_KEY!,
     tokenOrProvider: generateChatToken,
@@ -47,17 +45,14 @@ export const ChatUI = ({
     },
   });
 
-  useEffect(() => {
-    if (!client) return;
-
-    const channel = client.channel("messaging", meetingId, {
+  const channel = useMemo<StreamChannel | undefined>(() => {
+    if (!client) return undefined;
+    return client.channel("messaging", meetingId, {
       members: [userId],
     });
+  }, [client, meetingId, userId]);
 
-    setChannel(channel);
-  }, [client, meetingId, meetingName, userId]);
-
-  if (!client) {
+  if (!client || !channel) {
     return (
       <LoadingState
         title="Loading Chat"
