@@ -88,3 +88,29 @@ export const meetings = pgTable("meetings", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+// Chat History table for storing user chat sessions and messages
+export const chatHistory = pgTable("chat_history", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => nanoid()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Chat Messages table for storing individual messages within a chat
+export const chatMessages = pgTable("chat_messages", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => nanoid()),
+  chatId: text("chat_id")
+    .notNull()
+    .references(() => chatHistory.id, { onDelete: "cascade" }),
+  role: text("role").notNull(), // "user" or "assistant"
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
