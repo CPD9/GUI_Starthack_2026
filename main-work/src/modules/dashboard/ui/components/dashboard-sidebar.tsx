@@ -92,7 +92,7 @@ export const DashboardSidebar = () => {
             <div className="flex items-center justify-center py-4 px-4">
               <ThemedImage
                 lightSrc="/logo-transparent.png"
-                darkSrc="/logo-transparent-dark.png"
+                darkSrc="/logo-transparent-dark-mode.png"
                 alt="Zwick Roell Logo"
                 width={140}
                 height={40}
@@ -128,7 +128,7 @@ export const DashboardSidebar = () => {
         <div className="px-4 py-0">
           <Separator className="opacity-20 text-sidebar-foreground/50" />
         </div>
-        <SidebarGroup className="py-0 -mt-1">
+        <SidebarGroup className="py-0 -mt-2">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
