@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { BotIcon, VideoIcon, BarChart3Icon, WorkflowIcon, SparklesIcon, PlusIcon, MessageSquareIcon, Loader2Icon, Trash2Icon, HistoryIcon, AlertCircleIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { VideoIcon, BarChart3Icon, WorkflowIcon, SparklesIcon, PlusIcon, MessageSquareIcon, Loader2Icon, Trash2Icon, HistoryIcon, AlertCircleIcon, ChevronLeftIcon, ChevronRightIcon, PanelLeftCloseIcon, PanelLeftIcon, SearchIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { ThemedImage } from "@/components/themed-image";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -25,27 +24,34 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
+
+import { DashboardCommand } from "./dashboard-command";
 
 import { DashboardUserButton } from "./dashboard-user-button";
 import { DashboardTrial } from "./dashboard-trial";
 
-const firstSection = [
+const topSection = [
   {
     icon: PlusIcon,
     label: "New Conversation",
     href: "/chat",
   },
+];
+
+const bottomSection = [
   {
     icon: VideoIcon,
     label: "Sessions",
     href: "/meetings",
   },
   {
-    icon: BotIcon,
+    icon: SparklesIcon,
     label: "Analytics Agents",
     href: "/agents",
   },
@@ -67,9 +73,25 @@ export const DashboardSidebar = () => {
   const searchParams = useSearchParams();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const { state, toggleSidebar, isMobile } = useSidebar();
+  const [commandOpen, setCommandOpen] = useState(false);
   const [historyPage, setHistoryPage] = useState(1);
-  
+
   const currentChatId = searchParams.get("id");
+  const isCollapsed = state === "collapsed";
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setCommandOpen(true);
+      }
+    };
+
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
   // Fetch chat history
   const {
@@ -90,7 +112,7 @@ export const DashboardSidebar = () => {
     trpc.chat.remove.mutationOptions({
       onSuccess: (removedChat) => {
         if (currentChatId === removedChat.id) {
-          router.push("/chat");
+          router.replace("/chat");
         }
         queryClient.invalidateQueries({ queryKey: trpc.chat.getMany.queryKey() });
       },
@@ -98,56 +120,109 @@ export const DashboardSidebar = () => {
   );
 
   return (
-    <Sidebar>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <div className="flex items-center justify-center py-4 px-4">
-              <ThemedImage
-                lightSrc="/logo-transparent.png"
-                darkSrc="/logo-transparent-dark-mode.png"
-                alt="Zwick Roell Logo"
-                width={140}
-                height={40}
-                className="object-contain"
-              />
-            </div>
-            <Separator className="opacity-20 text-sidebar-foreground/50 mb-2" />
-            <SidebarMenu>
-              {firstSection.map((item) => (
-                <SidebarMenuItem key={item.href}>
+    <>
+      <DashboardCommand open={commandOpen} setOpen={setCommandOpen} />
+      <Sidebar collapsible="icon">
+        <SidebarHeader className="p-2">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={
+                isMobile
+                  ? "Toggle sidebar"
+                  : isCollapsed
+                    ? "Expand sidebar"
+                    : "Collapse sidebar"
+              }
+              className="size-8 hover:bg-sidebar-accent/50"
+              onClick={toggleSidebar}
+            >
+              {(isCollapsed || isMobile)
+                ? <PanelLeftIcon className="size-4" />
+                : <PanelLeftCloseIcon className="size-4" />
+              }
+            </Button>
+            <div className="flex-1" />
+          </div>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {/* New Conversation */}
+                {topSection.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={item.label}
+                      className={cn(
+                        "h-10 hover:bg-sidebar-accent/50 border border-transparent hover:border-sidebar-border",
+                        (pathname === item.href || pathname.startsWith(item.href + "/")) && "bg-sidebar-accent border-sidebar-border"
+                      )}
+                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="size-5" />
+                        <span className="text-sm font-medium tracking-tight">
+                          {item.label}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+
+                {/* Search */}
+                <SidebarMenuItem>
                   <SidebarMenuButton
-                    asChild
-                    className={cn(
-                      "h-10 hover:bg-sidebar-accent/50 border border-transparent hover:border-sidebar-border",
-                      (pathname === item.href || pathname.startsWith(item.href + "/")) && "bg-sidebar-accent border-sidebar-border"
-                    )}
-                    isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                    tooltip="Search (⌘K)"
+                    className="h-10 hover:bg-sidebar-accent/50 border border-transparent hover:border-sidebar-border"
+                    onClick={() => setCommandOpen(true)}
                   >
-                    <Link href={item.href}>
-                      <item.icon className="size-5" />
-                      <span className="text-sm font-medium tracking-tight">
-                        {item.label}
-                      </span>
-                    </Link>
+                    <SearchIcon className="size-5" />
+                    <span className="text-sm font-medium tracking-tight">
+                      Search
+                    </span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+
+                {/* Sessions and other items */}
+                {bottomSection.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={item.label}
+                      className={cn(
+                        "h-10 hover:bg-sidebar-accent/50 border border-transparent hover:border-sidebar-border",
+                        (pathname === item.href || pathname.startsWith(item.href + "/")) && "bg-sidebar-accent border-sidebar-border"
+                      )}
+                      isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="size-5" />
+                        <span className="text-sm font-medium tracking-tight">
+                          {item.label}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         
         {/* Chat History, Upgrade & Free Trial - Combined Section */}
         <div className="px-4 py-0">
           <Separator className="opacity-20 text-sidebar-foreground/50" />
         </div>
-        <SidebarGroup className="py-0 -mt-4">
+        <SidebarGroup className="py-0 -mt-4 ">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <Dialog>
                   <DialogTrigger asChild>
                     <SidebarMenuButton
+                      tooltip="Chat History"
                       className="h-10 hover:bg-sidebar-accent/50 border border-transparent hover:border-sidebar-border cursor-pointer"
                     >
                       <HistoryIcon className="size-5" />
@@ -273,6 +348,7 @@ export const DashboardSidebar = () => {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
+                  tooltip="Upgrade"
                   className={cn(
                     "h-10 hover:bg-sidebar-accent/50 border border-transparent hover:border-sidebar-border",
                     (pathname === "/upgrade" || pathname.startsWith("/upgrade/")) && "bg-sidebar-accent border-sidebar-border"
@@ -289,16 +365,16 @@ export const DashboardSidebar = () => {
               </SidebarMenuItem>
             </SidebarMenu>
             {/* Free Trial Usage */}
-            <div className="mt-1 px-2">
+            <div className={cn("mt-1", isCollapsed ? "px-0" : "px-2")}>
               <DashboardTrial />
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="text-sidebar-foreground">
-
         <DashboardUserButton />
       </SidebarFooter>
     </Sidebar>
+    </>
   )
 };

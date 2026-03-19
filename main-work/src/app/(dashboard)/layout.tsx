@@ -16,9 +16,11 @@ const Layout = ({ children }: Props) => {
       <Suspense fallback={SIDEBAR_FALLBACK}>
         <DashboardSidebarClient />
       </Suspense>
-      <main className="flex flex-col h-screen w-screen bg-muted overflow-hidden">
-        <DashboardNavbar />
-        <div className="flex-1 min-h-0 overflow-auto">
+      <main className="flex flex-col h-screen w-screen bg-background overflow-hidden relative">
+        <div className="relative z-20">
+          <DashboardNavbar />
+        </div>
+        <div className="flex-1 min-h-0 overflow-auto relative z-10">
           {children}
         </div>
       </main>
