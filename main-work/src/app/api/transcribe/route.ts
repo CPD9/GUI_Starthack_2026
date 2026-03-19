@@ -9,7 +9,7 @@ if (!process.env.OPENAI_API_KEY) {
 }
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY ?? "",
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function POST(request: NextRequest) {
@@ -37,14 +37,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate API key before making request
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json(
-        { error: "Audio transcription service is not configured" },
-        { status: 503 }
-      );
-    }
-
     // Transcribe using OpenAI Whisper
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
@@ -58,7 +50,10 @@ export async function POST(request: NextRequest) {
       success: true,
     });
   } catch (error) {
+    console.error("Transcription error:", error);
+    
     if (error instanceof OpenAI.APIError) {
+      console.error("OpenAI API error:", error.message);
       return NextResponse.json(
         { error: "External service error. Please try again later." },
         { status: error.status || 500 }

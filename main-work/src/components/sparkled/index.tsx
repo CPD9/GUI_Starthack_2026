@@ -322,7 +322,7 @@ export const SparkledBackground = ({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [dotCount, reactRadius, particleColor, position, isInline, isFullscreen, width, height, globalMouseTracking]);
+  }, [dotCount, reactRadius, sphereRadius, particleColor, position, isInline, isFullscreen, width, height, globalMouseTracking]);
 
   const positionClasses: Record<string, string> = {
     "center": "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",

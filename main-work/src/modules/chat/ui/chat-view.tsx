@@ -344,7 +344,7 @@ export const ChatView = ({ userName }: Props) => {
   }, [messages, generateReasoningSteps, saveChat]);
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isLoading) return;
     await sendMessageWorkflow(inputValue);
   };
 
