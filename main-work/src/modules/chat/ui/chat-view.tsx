@@ -207,7 +207,7 @@ export const ChatView = ({ userName }: Props) => {
     } catch (error) {
       console.error("Failed to load chat:", error);
     }
-  }, [queryClient, trpc.chat.getOne]);
+  }, [queryClient, trpc.chat]);
 
   // Handle loading chat by ID from URL
   useEffect(() => {
@@ -218,7 +218,7 @@ export const ChatView = ({ userName }: Props) => {
   }, [searchParams, currentChatId, loadChatById]);
 
   // Save current chat to database
-  const saveChat = async (newMessages: Message[]) => {
+  const saveChat = useCallback(async (newMessages: Message[]) => {
     if (newMessages.length === 0) return;
 
     const firstUserMessage = newMessages.find(m => m.role === "user");
@@ -245,10 +245,10 @@ export const ChatView = ({ userName }: Props) => {
         });
       }
     }
-  };
+  }, [currentChatId, createChatMutation, addMessageMutation]);
 
   // Generate reasoning steps based on the query
-  const generateReasoningSteps = (query: string): ReasoningStep[] => {
+  const generateReasoningSteps = useCallback((query: string): ReasoningStep[] => {
     const now = new Date();
     return [
       {
@@ -287,7 +287,7 @@ export const ChatView = ({ userName }: Props) => {
         timestamp: new Date(now.getTime() + 800),
       },
     ];
-  };
+  }, []);
 
   const getReasoningIcon = (type: ReasoningStep["type"]) => {
     switch (type) {

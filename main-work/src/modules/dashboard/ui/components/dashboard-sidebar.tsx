@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { BotIcon, VideoIcon, BarChart3Icon, WorkflowIcon, SparklesIcon, PlusIcon, MessageSquareIcon, Loader2Icon, Trash2Icon, HistoryIcon, AlertCircleIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { VideoIcon, BarChart3Icon, WorkflowIcon, SparklesIcon, PlusIcon, MessageSquareIcon, Loader2Icon, Trash2Icon, HistoryIcon, AlertCircleIcon, ChevronLeftIcon, ChevronRightIcon, PanelLeftCloseIcon, PanelLeftIcon, SearchIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -67,8 +67,10 @@ export const DashboardSidebar = () => {
   const searchParams = useSearchParams();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const { state, toggleSidebar, isMobile } = useSidebar();
+  const [commandOpen, setCommandOpen] = useState(false);
   const [historyPage, setHistoryPage] = useState(1);
-  
+
   const currentChatId = searchParams.get("id");
 
   // Fetch chat history
@@ -90,7 +92,7 @@ export const DashboardSidebar = () => {
     trpc.chat.remove.mutationOptions({
       onSuccess: (removedChat) => {
         if (currentChatId === removedChat.id) {
-          router.push("/chat");
+          router.replace("/chat");
         }
         queryClient.invalidateQueries({ queryKey: trpc.chat.getMany.queryKey() });
       },

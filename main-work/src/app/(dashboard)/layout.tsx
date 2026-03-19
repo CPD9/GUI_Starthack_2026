@@ -1,7 +1,10 @@
+import { Suspense } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 import { DashboardNavbar } from "@/modules/dashboard/ui/components/dashboard-navbar";
-import { DashboardSidebar } from "@/modules/dashboard/ui/components/dashboard-sidebar";
+import { DashboardSidebarClient } from "@/modules/dashboard/ui/components/dashboard-sidebar-client";
+
+const SIDEBAR_FALLBACK = <div className="hidden md:block w-72 border-r bg-sidebar" />;
 
 interface Props {
   children: React.ReactNode;
@@ -10,7 +13,9 @@ interface Props {
 const Layout = ({ children }: Props) => {
   return ( 
     <SidebarProvider>
-      <DashboardSidebar />
+      <Suspense fallback={SIDEBAR_FALLBACK}>
+        <DashboardSidebarClient />
+      </Suspense>
       <main className="flex flex-col h-screen w-screen bg-background overflow-hidden relative">
         <div className="relative z-20">
           <DashboardNavbar />

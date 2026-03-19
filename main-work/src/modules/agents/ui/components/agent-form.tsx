@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { toast } from "sonner";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -90,6 +90,10 @@ export const AgentForm = ({
 
   const isEdit = !!initialValues?.id;
   const isPending = createAgent.isPending || updateAgent.isPending;
+  const watchedName = useWatch({
+    control: form.control,
+    name: "name",
+  });
 
   const onSubmit = (values: z.infer<typeof agentsInsertSchema>) => {
     if (isEdit) {
@@ -103,7 +107,7 @@ export const AgentForm = ({
     <Form {...form}>
       <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
         <GeneratedAvatar
-          seed={form.watch("name")}
+          seed={watchedName ?? ""}
           variant="botttsNeutral"
           className="border size-16"
         />
