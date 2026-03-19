@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, getTableColumns } from "drizzle-orm";
+import { and, desc, eq, count } from "drizzle-orm";
 
 import { db } from "@/db";
 import { chatHistory, chatMessages } from "@/db/schema";
@@ -29,25 +29,27 @@ export const chatRouter = createTRPCRouter({
   createWithMessages: protectedProcedure
     .input(createChatWithMessagesSchema)
     .mutation(async ({ ctx, input }) => {
-      const [newChat] = await db
-        .insert(chatHistory)
-        .values({
-          title: input.title,
-          userId: ctx.auth.user.id,
-        })
-        .returning();
+      return await db.transaction(async (tx) => {
+        const [newChat] = await tx
+          .insert(chatHistory)
+          .values({
+            title: input.title,
+            userId: ctx.auth.user.id,
+          })
+          .returning();
 
-      if (input.messages.length > 0) {
-        await db.insert(chatMessages).values(
-          input.messages.map((msg) => ({
-            chatId: newChat.id,
-            role: msg.role,
-            content: msg.content,
-          }))
-        );
-      }
+        if (input.messages.length > 0) {
+          await tx.insert(chatMessages).values(
+            input.messages.map((msg) => ({
+              chatId: newChat.id,
+              role: msg.role,
+              content: msg.content,
+            }))
+          );
+        }
 
-      return newChat;
+        return newChat;
+      });
     }),
 
   // Update chat title
@@ -156,7 +158,7 @@ export const chatRouter = createTRPCRouter({
         .offset((page - 1) * pageSize);
 
       const [{ total }] = await db
-        .select({ total: db.$count(chatHistory, eq(chatHistory.userId, ctx.auth.user.id)) })
+        .select({ total: count() })
         .from(chatHistory)
         .where(eq(chatHistory.userId, ctx.auth.user.id));
 

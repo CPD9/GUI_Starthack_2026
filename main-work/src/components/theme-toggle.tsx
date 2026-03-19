@@ -16,9 +16,12 @@ export const ThemeToggle = () => {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className="h-9 w-9 bg-background text-foreground border border-border">
+      <div
+        className="h-9 w-9 bg-background text-foreground border border-border rounded-md flex items-center justify-center"
+        aria-hidden="true"
+      >
         <Sun className="h-4 w-4" />
-      </Button>
+      </div>
     );
   }
 

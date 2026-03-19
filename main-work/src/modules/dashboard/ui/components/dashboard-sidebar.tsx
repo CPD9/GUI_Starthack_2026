@@ -128,7 +128,7 @@ export const DashboardSidebar = () => {
         <div className="px-4 py-0">
           <Separator className="opacity-20 text-sidebar-foreground/50" />
         </div>
-        <SidebarGroup className="py-0 -mt-2">
+        <SidebarGroup className="py-0 -mt-4">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -188,14 +188,22 @@ export const DashboardSidebar = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="size-8 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                                className="size-8 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity shrink-0 disabled:opacity-50"
+                                disabled={deleteChatMutation.isPending}
+                                aria-label={`Delete chat ${chat.title}`}
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  deleteChatMutation.mutate({ id: chat.id });
+                                  if (window.confirm("Delete this conversation?")) {
+                                    deleteChatMutation.mutate({ id: chat.id });
+                                  }
                                 }}
                               >
-                                <Trash2Icon className="size-4 text-destructive" />
+                                {deleteChatMutation.isPending ? (
+                                  <Loader2Icon className="size-4 animate-spin" />
+                                ) : (
+                                  <Trash2Icon className="size-4 text-destructive" />
+                                )}
                               </Button>
                             </div>
                           ))}

@@ -3,8 +3,13 @@ import OpenAI from "openai";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
+// Validate API key exists at startup
+if (!process.env.OPENAI_API_KEY) {
+  console.error("OPENAI_API_KEY environment variable is not set");
+}
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
+  apiKey: process.env.OPENAI_API_KEY ?? "",
 });
 
 export async function POST(request: NextRequest) {
@@ -32,17 +37,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Convert to a format OpenAI can process
-    const audioBuffer = Buffer.from(await audioFile.arrayBuffer());
-    
-    // Create a File object that OpenAI SDK expects
-    const file = new File([audioBuffer], "audio.webm", {
-      type: audioFile.type,
-    });
+    // Validate API key before making request
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { error: "Audio transcription service is not configured" },
+        { status: 503 }
+      );
+    }
 
     // Transcribe using OpenAI Whisper
     const transcription = await openai.audio.transcriptions.create({
-      file: file,
+      file: audioFile,
       model: "whisper-1",
       language: "en", // Auto-detect language if needed by removing this
       response_format: "json",
@@ -56,8 +61,9 @@ export async function POST(request: NextRequest) {
     console.error("Transcription error:", error);
     
     if (error instanceof OpenAI.APIError) {
+      console.error("OpenAI API error:", error.message);
       return NextResponse.json(
-        { error: `OpenAI API error: ${error.message}` },
+        { error: "External service error. Please try again later." },
         { status: error.status || 500 }
       );
     }

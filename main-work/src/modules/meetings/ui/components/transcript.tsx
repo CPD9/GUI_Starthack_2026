@@ -51,7 +51,7 @@ export const Transcript = ({ meetingId }: Props) => {
                     />
                   </Avatar>
                   <p className="text-sm font-medium">{item.user.name}</p>
-                  <p className="text-sm text-red-500 font-medium">
+                  <p className="text-sm text-primary font-medium">
                     {format(
                       new Date(0, 0, 0, 0, 0, 0, item.start_ts),
                       "mm:ss"
@@ -60,7 +60,7 @@ export const Transcript = ({ meetingId }: Props) => {
                 </div>
                 <Highlighter
                   className="text-sm text-neutral-700"
-                  highlightClassName="bg-red-200"
+                  highlightClassName="bg-primary/20"
                   searchWords={[searchQuery]}
                   autoEscape={true}
                   textToHighlight={item.text}

@@ -139,7 +139,7 @@ export const CompletedState = ({ data }: Props) => {
                     ),
                     code: (props) => (
                       <code
-                        className="bg-gray-100 px-1 py-0.5 rounded"
+                        className="bg-muted px-1 py-0.5 rounded"
                         {...props}
                       />
                     ),

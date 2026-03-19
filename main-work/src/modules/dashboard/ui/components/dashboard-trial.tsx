@@ -28,13 +28,13 @@ export const DashboardTrial = () => {
           <p className="text-[10px] text-sidebar-foreground/70">
             {data.agentCount}/{MAX_FREE_AGENTS} Analytics Agents
           </p>
-          <Progress value={(data.agentCount / MAX_FREE_AGENTS) * 100} className="h-1.5" />
+          <Progress value={Math.max(0, Math.min(100, (data.agentCount / MAX_FREE_AGENTS) * 100))} className="h-1.5" />
         </div>
         <div className="flex flex-col gap-y-1">
           <p className="text-[10px] text-sidebar-foreground/70">
             {data.meetingCount}/{MAX_FREE_MEETINGS} Sessions
           </p>
-          <Progress value={(data.meetingCount / MAX_FREE_MEETINGS) * 100} className="h-1.5" />
+          <Progress value={Math.max(0, Math.min(100, (data.meetingCount / MAX_FREE_MEETINGS) * 100))} className="h-1.5" />
         </div>
       </div>
     </div>
