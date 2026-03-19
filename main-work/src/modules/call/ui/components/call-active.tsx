@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { ThemedImage } from "@/components/themed-image";
 import {
   CallControls,
   SpeakerLayout,
@@ -15,7 +15,7 @@ export const CallActive = ({ onLeave, meetingName }: Props) => {
     <div className="flex flex-col justify-between p-4 h-full text-white">
       <div className="bg-[#101213] rounded-full p-4 flex items-center gap-4">
         <Link href="/" className="flex items-center justify-center p-1 bg-white/10 rounded-full w-fit">
-          <Image src="/logo.svg" width={22} height={22} alt="Logo" />
+          <ThemedImage lightSrc="/logo-transparent.png" darkSrc="/logo-transparent-dark-mode.png" width={22} height={22} alt="Logo" />
         </Link>
         <h4 className="text-base">
           {meetingName}

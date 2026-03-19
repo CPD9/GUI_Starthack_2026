@@ -26,9 +26,9 @@ const statusIconMap = {
 };
 
 const statusColorMap = {
-  upcoming: "bg-yellow-500/20 text-yellow-800 border-yellow-800/5",
-  active: "bg-blue-500/20 text-blue-800 border-blue-800/5",
-  completed: "bg-red-500/20 text-red-800 border-red-800/5",
+  upcoming: "bg-neutral-500/20 text-neutral-800 dark:text-neutral-200 border-neutral-800/5",
+  active: "bg-red-500/20 text-red-800 dark:text-red-200 border-red-800/5",
+  completed: "bg-neutral-200/40 text-neutral-700 dark:text-neutral-300 border-neutral-700/5",
   cancelled: "bg-rose-500/20 text-rose-800 border-rose-800/5",
   processing: "bg-gray-300/20 text-gray-800 border-gray-800/5",
 }
@@ -91,7 +91,7 @@ export const columns: ColumnDef<MeetingGetMany[number]>[] = [
         variant="outline"
         className="capitalize [&>svg]:size-4 flex items-center gap-x-2"
       >
-        <ClockFadingIcon className="text-blue-700" />
+        <ClockFadingIcon className="text-red-600" />
         {row.original.duration ? formatDuration(row.original.duration) : "No duration"}
       </Badge>
     ),

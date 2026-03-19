@@ -1,9 +1,0 @@
-<svg width="43" height="41" viewBox="0 0 43 41" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Bar chart / analytics icon - Zwick/Roell red branding -->
-  <rect x="6" y="24" width="6" height="12" rx="1" fill="#E30613"/>
-  <rect x="14" y="18" width="6" height="18" rx="1" fill="#E30613"/>
-  <rect x="22" y="12" width="6" height="24" rx="1" fill="#E30613"/>
-  <rect x="30" y="8" width="6" height="28" rx="1" fill="#FF4D5A"/>
-  <!-- Trend line accent -->
-  <path d="M8 28 L16 22 L24 16 L32 12" stroke="#FF4D5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
