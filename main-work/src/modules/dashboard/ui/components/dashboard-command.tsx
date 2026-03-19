@@ -44,6 +44,11 @@ export const DashboardCommand = ({ open, setOpen }: Props) => {
         onValueChange={(value) => setSearch(value)}
       />
       <CommandList>
+        <CommandGroup heading="Chat">
+          <CommandItem onSelect={() => { router.push("/chat"); setOpen(false); }}>
+            Chat
+          </CommandItem>
+        </CommandGroup>
         <CommandGroup heading="Sessions">
           <CommandEmpty>
             <span className="text-muted-foreground text-sm">
