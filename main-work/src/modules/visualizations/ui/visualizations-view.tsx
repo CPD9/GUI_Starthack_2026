@@ -17,6 +17,8 @@ export const VisualizationsView = () => {
   const { resolvedTheme } = useTheme();
   const [selectedViz, setSelectedViz] = useState<string | null>(null);
   const [showSparkle, setShowSparkle] = useState(true);
+  const sparkleColor =
+    resolvedTheme === "light" ? "15, 23, 42" : "255, 255, 255";
 
   return (
     <div className="flex-1 p-4 md:p-8 flex flex-col gap-6 relative">
@@ -116,8 +118,7 @@ export const VisualizationsView = () => {
                   sphereRadius={80}
                   width={360}
                   height={360}
-                  particleColor="255, 255, 255"
-                  glowColor="255, 255, 255"
+                  particleColor={sparkleColor}
                   onClick={() => setShowSparkle(false)}
                   className="hover:opacity-80 transition-opacity"
                   globalMouseTracking={true}

@@ -304,7 +304,7 @@ export const ChatView = ({ userName }: Props) => {
   };
 
   // Shared message send workflow
-  const sendMessageWorkflow = async (content: string) => {
+  const sendMessageWorkflow = useCallback(async (content: string) => {
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: "user",
@@ -340,7 +340,7 @@ export const ChatView = ({ userName }: Props) => {
     setExpandedReasoning((prev) => ({ ...prev, [assistantMessage.id]: false }));
     
     await saveChat(allMessages);
-  };
+  }, [messages, generateReasoningSteps, saveChat]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -354,7 +354,7 @@ export const ChatView = ({ userName }: Props) => {
       setPendingVoiceMessage(null);
       sendMessageWorkflow(msg);
     }
-  }, [pendingVoiceMessage]);
+  }, [pendingVoiceMessage, sendMessageWorkflow]);
 
   // Transcribe audio using OpenAI Whisper
   const transcribeAudio = useCallback(async (audioBlob: Blob) => {
@@ -456,7 +456,6 @@ export const ChatView = ({ userName }: Props) => {
                   width={150}
                   height={150}
                   particleColor={resolvedTheme === "dark" ? "255, 255, 255" : "240, 159, 155"}
-                  glowColor={resolvedTheme === "dark" ? "255, 255, 255" : "240, 159, 155"}
                   className="pointer-events-auto cursor-pointer"
                 />
               </div>

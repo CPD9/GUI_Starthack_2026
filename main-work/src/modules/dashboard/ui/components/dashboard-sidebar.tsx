@@ -81,9 +81,10 @@ export const DashboardSidebar = () => {
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      if (e.repeat) return;
+      if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setCommandOpen((open) => !open);
+        setCommandOpen(true);
       }
     };
 
@@ -118,6 +119,13 @@ export const DashboardSidebar = () => {
             <Button
               variant="ghost"
               size="icon"
+              aria-label={
+                isMobile
+                  ? "Toggle sidebar"
+                  : isCollapsed
+                    ? "Expand sidebar"
+                    : "Collapse sidebar"
+              }
               className="size-8 hover:bg-sidebar-accent/50"
               onClick={toggleSidebar}
             >

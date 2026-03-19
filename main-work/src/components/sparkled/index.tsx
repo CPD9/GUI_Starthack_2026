@@ -8,7 +8,6 @@ interface SparkleProps {
   dotCount?: number;
   reactRadius?: number;
   particleColor?: string; // RGB format
-  glowColor?: string;
   position?: "center" | "top-left" | "top-right" | "bottom-right" | "inline" | "fullscreen";
   onClick?: () => void;
   width?: number;
@@ -44,7 +43,6 @@ export const SparkledBackground = ({
   dotCount = 200, // Reduced from 500 for better performance
   reactRadius = 150,
   particleColor = "255, 255, 255",
-  glowColor = "255, 255, 255",
   position = "fullscreen",
   onClick,
   width,
@@ -324,7 +322,7 @@ export const SparkledBackground = ({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [dotCount, reactRadius, particleColor, glowColor, position, isInline, isFullscreen, width, height, globalMouseTracking]);
+  }, [dotCount, reactRadius, particleColor, position, isInline, isFullscreen, width, height, globalMouseTracking]);
 
   const positionClasses: Record<string, string> = {
     "center": "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
