@@ -160,14 +160,6 @@ export const ChatView = ({ userName }: Props) => {
     }
   }, [searchParams, router]);
   
-  // Handle loading chat by ID from URL
-  useEffect(() => {
-    const chatId = searchParams.get("id");
-    if (chatId && chatId !== currentChatId) {
-      loadChatById(chatId);
-    }
-  }, [searchParams]);
-  
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   
@@ -194,7 +186,7 @@ export const ChatView = ({ userName }: Props) => {
   );
 
   // Load a specific chat by ID
-  const loadChatById = async (chatId: string) => {
+  const loadChatById = useCallback(async (chatId: string) => {
     try {
       const chat = await queryClient.fetchQuery(
         trpc.chat.getOne.queryOptions({ id: chatId })
@@ -215,7 +207,15 @@ export const ChatView = ({ userName }: Props) => {
     } catch (error) {
       console.error("Failed to load chat:", error);
     }
-  };
+  }, [queryClient, trpc.chat.getOne]);
+
+  // Handle loading chat by ID from URL
+  useEffect(() => {
+    const chatId = searchParams.get("id");
+    if (chatId && chatId !== currentChatId) {
+      loadChatById(chatId);
+    }
+  }, [searchParams, currentChatId, loadChatById]);
 
   // Save current chat to database
   const saveChat = async (newMessages: Message[]) => {

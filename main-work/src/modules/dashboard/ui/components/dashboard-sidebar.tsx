@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { BotIcon, VideoIcon, BarChart3Icon, WorkflowIcon, SparklesIcon, PlusIcon, MessageSquareIcon, Loader2Icon, Trash2Icon, HistoryIcon } from "lucide-react";
 
@@ -63,6 +63,7 @@ const firstSection = [
 
 export const DashboardSidebar = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -70,7 +71,7 @@ export const DashboardSidebar = () => {
   const currentChatId = searchParams.get("id");
 
   // Fetch chat history
-  const { data: chatHistoryData, isLoading: isLoadingHistory } = useQuery(
+  const { data: chatHistoryData, isLoading: isLoadingHistory, isError: isChatHistoryError, refetch: refetchChatHistory } = useQuery(
     trpc.chat.getMany.queryOptions({ pageSize: 50 })
   );
   const chatHistoryList = chatHistoryData?.items ?? [];
@@ -78,7 +79,10 @@ export const DashboardSidebar = () => {
   // Delete chat mutation
   const deleteChatMutation = useMutation(
     trpc.chat.remove.mutationOptions({
-      onSuccess: () => {
+      onSuccess: (_data, variables) => {
+        if (variables.id === currentChatId) {
+          router.replace("/chat");
+        }
         queryClient.invalidateQueries({ queryKey: trpc.chat.getMany.queryKey() });
       },
     })
@@ -128,7 +132,7 @@ export const DashboardSidebar = () => {
         <div className="px-4 py-0">
           <Separator className="opacity-20 text-sidebar-foreground/50" />
         </div>
-        <SidebarGroup className="py-0 -mt-4">
+        <SidebarGroup className="py-0 -mt-4 ">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -154,6 +158,13 @@ export const DashboardSidebar = () => {
                       {isLoadingHistory ? (
                         <div className="flex items-center justify-center py-8">
                           <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
+                        </div>
+                      ) : isChatHistoryError ? (
+                        <div className="text-center py-8">
+                          <p className="text-sm text-destructive">Failed to load chat history</p>
+                          <Button variant="ghost" size="sm" onClick={() => refetchChatHistory()} className="mt-2">
+                            Try again
+                          </Button>
                         </div>
                       ) : chatHistoryList.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">
