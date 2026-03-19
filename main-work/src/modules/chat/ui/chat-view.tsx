@@ -129,14 +129,6 @@ export const ChatView = ({ userName }: Props) => {
     }
   }, [searchParams, router]);
   
-  // Handle loading chat by ID from URL
-  useEffect(() => {
-    const chatId = searchParams.get("id");
-    if (chatId && chatId !== currentChatId) {
-      loadChatById(chatId);
-    }
-  }, [searchParams]);
-  
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   
@@ -163,7 +155,7 @@ export const ChatView = ({ userName }: Props) => {
   );
 
   // Load a specific chat by ID
-  const loadChatById = async (chatId: string) => {
+  const loadChatById = useCallback(async (chatId: string) => {
     try {
       const chat = await queryClient.fetchQuery(
         trpc.chat.getOne.queryOptions({ id: chatId })
@@ -184,10 +176,18 @@ export const ChatView = ({ userName }: Props) => {
     } catch (error) {
       console.error("Failed to load chat:", error);
     }
-  };
+  }, [queryClient, trpc.chat]);
+
+  // Handle loading chat by ID from URL
+  useEffect(() => {
+    const chatId = searchParams.get("id");
+    if (chatId && chatId !== currentChatId) {
+      loadChatById(chatId);
+    }
+  }, [searchParams, currentChatId, loadChatById]);
 
   // Save current chat to database
-  const saveChat = async (newMessages: Message[]) => {
+  const saveChat = useCallback(async (newMessages: Message[]) => {
     if (newMessages.length === 0) return;
 
     const firstUserMessage = newMessages.find(m => m.role === "user");
@@ -214,10 +214,10 @@ export const ChatView = ({ userName }: Props) => {
         });
       }
     }
-  };
+  }, [currentChatId, createChatMutation, addMessageMutation]);
 
   // Generate reasoning steps based on the query
-  const generateReasoningSteps = (query: string): ReasoningStep[] => {
+  const generateReasoningSteps = useCallback((query: string): ReasoningStep[] => {
     const now = new Date();
     return [
       {
@@ -256,7 +256,7 @@ export const ChatView = ({ userName }: Props) => {
         timestamp: new Date(now.getTime() + 800),
       },
     ];
-  };
+  }, []);
 
   const getReasoningIcon = (type: ReasoningStep["type"]) => {
     switch (type) {
@@ -359,7 +359,7 @@ export const ChatView = ({ userName }: Props) => {
       
       sendVoiceMessage();
     }
-  }, [pendingVoiceMessage]);
+  }, [pendingVoiceMessage, messages, saveChat, generateReasoningSteps]);
 
   // Transcribe audio using OpenAI Whisper
   const transcribeAudio = useCallback(async (audioBlob: Blob) => {

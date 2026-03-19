@@ -7,6 +7,7 @@ This folder is now the primary Next.js application root for the StartHack 2026 b
 - `src/` - app routes, modules, API handlers, and UI components
 - `public/` - static assets
 - `mcp-server/` - local MCP helper server (optional for core app boot)
+- `services/data-pipeline/` - Python FastAPI analytics pipeline service
 - `docs/` - implementation notes and branch plans
 
 ## Prerequisites
@@ -29,6 +30,16 @@ npm run dev
 
 App default URL: `http://localhost:3000`
 
+Run Python data service (separate terminal):
+
+```bash
+cd main-work/services/data-pipeline
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn src.app:app --reload --port 8100
+```
+
 ## 2) Environment Variables
 
 Create `.env` in `main-work/` (or copy from `.env.example`) and provide at least:
@@ -37,6 +48,7 @@ Create `.env` in `main-work/` (or copy from `.env.example`) and provide at least
 - `BETTER_AUTH_URL`
 - `NEXT_PUBLIC_BETTER_AUTH_URL`
 - `MONGODB_URI` (defaults to `mongodb://localhost:27017` if omitted)
+- `PIPELINE_SERVICE_URL` (defaults to `http://localhost:8100`)
 - other optional integrations as needed (Polar, Stream, OpenAI, etc.)
 
 Never commit `.env` or secret keys.

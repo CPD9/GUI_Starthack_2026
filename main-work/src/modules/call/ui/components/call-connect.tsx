@@ -1,7 +1,7 @@
 "use client";
 
 import { LoaderIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
   Call,
@@ -36,9 +36,9 @@ export const CallConnect = ({
     trpc.meetings.generateToken.mutationOptions(),
   );
 
-  const [client, setClient] = useState<StreamVideoClient>();
-  useEffect(() => {
-    const _client = new StreamVideoClient({
+  const client = useMemo(
+    () =>
+      new StreamVideoClient({
       apiKey: process.env.NEXT_PUBLIC_STREAM_VIDEO_API_KEY!,
       user: {
         id: userId,
@@ -46,33 +46,30 @@ export const CallConnect = ({
         image: userImage,
       },
       tokenProvider: generateToken,
-    });
-
-    setClient(_client);
-
-    return () => {
-      _client.disconnectUser();
-      setClient(undefined);
-    };
-  }, [userId, userName, userImage, generateToken]);
-
-  const [call, setCall] = useState<Call>();
+    }),
+    [userId, userName, userImage, generateToken]
+  );
   useEffect(() => {
-      if (!client) return;
+    return () => {
+      client.disconnectUser();
+    };
+  }, [client]);
 
-      const _call = client.call("default", meetingId);
-      _call.camera.disable();
-      _call.microphone.disable();
-      setCall(_call);
-
-      return () => {
-        if (_call.state.callingState !== CallingState.LEFT) {
-          _call.leave();
-          _call.endCall();
-          setCall(undefined);
-        }
-      };
+  const call = useMemo<Call>(() => {
+    const nextCall = client.call("default", meetingId);
+    nextCall.camera.disable();
+    nextCall.microphone.disable();
+    return nextCall;
   }, [client, meetingId]);
+
+  useEffect(() => {
+    return () => {
+      if (call.state.callingState !== CallingState.LEFT) {
+        call.leave();
+        call.endCall();
+      }
+    };
+  }, [call]);
 
   if (!client || !call) {
     return (

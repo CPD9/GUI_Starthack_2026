@@ -53,3 +53,11 @@ mcp-server/.npm-cache/
 
 # Large local Docker exports
 txp-mongo-*.tar
+
+# Local analytics datasets (never commit raw data)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/reports/*
+!data/reports/.gitkeep
