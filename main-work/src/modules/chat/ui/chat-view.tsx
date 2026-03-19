@@ -897,8 +897,8 @@ export const ChatView = ({ userName }: Props) => {
         )}
       </div>
 
-      <div className="px-4 py-3 flex items-center justify-between">
-        {showChat ? (
+      <div className="px-4 py-3 flex flex-col items-center gap-2">
+        {showChat && (
           <Button
             variant="ghost"
             size="sm"
@@ -915,16 +915,13 @@ export const ChatView = ({ userName }: Props) => {
             <PlusIcon className="size-4" />
             <span className="text-xs">Collapse Chat</span>
           </Button>
-        ) : (
-          <div className="w-[140px]" />
         )}
-        <p className="text-xs text-muted-foreground text-center flex-1">
+        <p className="text-xs text-muted-foreground text-center">
           Your conversations may be reviewed to improve our analytics.{" "}
           <Link href="#" className="underline underline-offset-2">
             Manage activity
           </Link>
         </p>
-        <div className="w-[140px]" />
       </div>
     </div>
   );
