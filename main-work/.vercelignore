@@ -1,0 +1,11 @@
+# Python data pipeline (not used by Next.js on Vercel)
+services/data-pipeline/.venv
+services/data-pipeline/**/*.pyc
+services/data-pipeline/__pycache__
+
+# Raw data
+data/raw
+data/processed
+
+# MCP server (optional local tool)
+mcp-server
