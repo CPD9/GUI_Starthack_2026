@@ -107,7 +107,7 @@ export const VisualizationsView = () => {
               </p>
             </div>
           ) : (
-            <div className="h-[400px] flex items-center justify-center rounded-lg border border-dashed border-border">
+            <div className="h-[400px] flex items-center justify-start rounded-lg border border-dashed border-border">
               {showSparkle ? (
                 <SparkledBackground
                   position="inline"
@@ -120,6 +120,7 @@ export const VisualizationsView = () => {
                   glowColor="255, 255, 255"
                   onClick={() => setShowSparkle(false)}
                   className="hover:opacity-80 transition-opacity"
+                  globalMouseTracking={true}
                 />
               ) : (
                 <p className="text-muted-foreground">

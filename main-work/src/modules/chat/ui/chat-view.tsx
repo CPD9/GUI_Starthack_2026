@@ -43,6 +43,7 @@ import { useTRPC } from "@/trpc/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { GeneratedAvatar } from "@/components/generated-avatar";
+import { ThemedImage } from "@/components/themed-image";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,8 +78,6 @@ const SUGGESTION_BUBBLES = [
   { label: "Analyze test data", icon: ImageIcon, href: "/agents" },
   { label: "Compare batches", icon: PenLineIcon, href: "/agents" },
   { label: "Explain results", icon: BookOpenIcon, href: "/agents" },
-  { label: "Quick insights", icon: ZapIcon, href: "/agents" },
-  { label: "Talk to expert", icon: SparklesIcon, href: "/agents" },
 ];
 
 const TOOLS_OPTIONS = [
@@ -516,14 +515,13 @@ export const ChatView = ({ userName }: Props) => {
                 </div>
               )}
               
-              <div className="glass rounded-2xl shadow-lg border border-border/50 p-4 flex flex-col gap-3">
-                <div className="flex items-end gap-2">
+              <div className="flex items-center gap-1 rounded-full border border-border/50 bg-muted/50 backdrop-blur-sm px-2 py-1 shadow-sm">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="shrink-0 rounded-xl"
+                      className="shrink-0 rounded-full"
                     >
                       <PlusIcon className="size-5" />
                     </Button>
@@ -571,7 +569,7 @@ export const ChatView = ({ userName }: Props) => {
                         handleSendMessage();
                       }
                     }}
-                    className="w-full border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-base py-4"
+                    className="w-full border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-base h-10"
                   />
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
@@ -619,7 +617,7 @@ export const ChatView = ({ userName }: Props) => {
                   <Button 
                     variant="ghost" 
                     size={(isRecording || isTranscribing) ? "default" : "icon"}
-                    className={`rounded-xl transition-all duration-200 ${isRecording ? 'bg-red-500/20 text-red-500 animate-pulse gap-2 px-4' : isTranscribing ? 'bg-blue-500/10 text-blue-500 gap-2 px-4' : ''}`}
+                    className={`rounded-full transition-all duration-200 ${isRecording ? 'bg-red-500/20 text-red-500 animate-pulse gap-2 px-4' : isTranscribing ? 'bg-blue-500/10 text-blue-500 gap-2 px-4' : ''}`}
                     onClick={handleMicToggle}
                     disabled={isTranscribing}
                   >
@@ -641,13 +639,12 @@ export const ChatView = ({ userName }: Props) => {
                   {inputValue.trim() && (
                     <Button 
                       size="icon" 
-                      className="rounded-xl"
+                      className="rounded-full"
                       onClick={handleSendMessage}
                     >
                       <SendIcon className="size-5" />
                     </Button>
                   )}
-                </div>
                 </div>
               </div>
 
@@ -821,13 +818,13 @@ export const ChatView = ({ userName }: Props) => {
             </div>
 
             {/* Chat Input */}
-            <div className="glass rounded-2xl shadow-lg border border-border/50 p-2 flex items-end gap-2 mt-4">
+            <div className="flex items-center gap-1 mt-4 rounded-full border border-border/50 bg-muted/50 backdrop-blur-sm px-2 py-1 shadow-sm">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="shrink-0 rounded-xl"
+                    className="shrink-0 rounded-full"
                   >
                     <PlusIcon className="size-5" />
                   </Button>
@@ -865,7 +862,7 @@ export const ChatView = ({ userName }: Props) => {
                     handleSendMessage();
                   }
                 }}
-                className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-base py-6"
+                className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-base h-10"
               />
               <div className="flex items-center gap-1 shrink-0">
                 <DropdownMenu>
@@ -912,7 +909,7 @@ export const ChatView = ({ userName }: Props) => {
                 <Button
                   variant="ghost"
                   size={(isRecording || isTranscribing) ? "default" : "icon"}
-                  className={`rounded-xl transition-all duration-200 ${isRecording ? "bg-red-500/20 text-red-500 animate-pulse gap-2 px-4" : isTranscribing ? "bg-blue-500/10 text-blue-500 gap-2 px-4" : ""}`}
+                  className={`rounded-full transition-all duration-200 ${isRecording ? "bg-red-500/20 text-red-500 animate-pulse gap-2 px-4" : isTranscribing ? "bg-blue-500/10 text-blue-500 gap-2 px-4" : ""}`}
                   onClick={handleMicToggle}
                   disabled={isTranscribing}
                 >
@@ -931,7 +928,7 @@ export const ChatView = ({ userName }: Props) => {
                   )}
                 </Button>
 
-                <Button size="icon" className="rounded-xl" onClick={handleSendMessage} disabled={!inputValue.trim()}>
+                <Button size="icon" className="rounded-full" onClick={handleSendMessage} disabled={!inputValue.trim()}>
                   <SendIcon className="size-5" />
                 </Button>
               </div>
@@ -959,6 +956,14 @@ export const ChatView = ({ userName }: Props) => {
             <span className="text-xs">Collapse Chat</span>
           </Button>
         )}
+        <ThemedImage
+          lightSrc="/logo-transparent.png"
+          darkSrc="/logo-transparent-dark-mode.png"
+          alt="Zwick Roell Logo"
+          width={100}
+          height={28}
+          className="object-contain opacity-70"
+        />
         <p className="text-xs text-muted-foreground text-center">
           Your conversations may be reviewed to improve our analytics.{" "}
           <Link href="#" className="underline underline-offset-2">

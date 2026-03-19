@@ -14,6 +14,7 @@ interface SparkleProps {
   width?: number;
   height?: number;
   sphereRadius?: number; // Radius of the globe
+  globalMouseTracking?: boolean; // Track mouse globally even in inline mode
 }
 
 interface Particle {
@@ -49,6 +50,7 @@ export const SparkledBackground = ({
   width,
   height,
   sphereRadius = 250,
+  globalMouseTracking = false,
 }: SparkleProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
@@ -300,16 +302,21 @@ export const SparkledBackground = ({
     resizeCanvas();
     animate();
 
-    const mouseTarget = isFullscreen ? window : canvas;
+    const useWindowMouse = isFullscreen || globalMouseTracking;
+    const mouseTarget = useWindowMouse ? window : canvas;
     mouseTarget.addEventListener("mousemove", handleMouseMove as EventListener);
-    canvas.addEventListener("mouseleave", handleMouseLeave);
+    if (!useWindowMouse) {
+      canvas.addEventListener("mouseleave", handleMouseLeave);
+    }
     if (isFullscreen) {
       window.addEventListener("resize", handleResize);
     }
 
     return () => {
       mouseTarget.removeEventListener("mousemove", handleMouseMove as EventListener);
-      canvas.removeEventListener("mouseleave", handleMouseLeave);
+      if (!useWindowMouse) {
+        canvas.removeEventListener("mouseleave", handleMouseLeave);
+      }
       if (isFullscreen) {
         window.removeEventListener("resize", handleResize);
       }
@@ -317,7 +324,7 @@ export const SparkledBackground = ({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [dotCount, reactRadius, particleColor, glowColor, position, isInline, isFullscreen, width, height]);
+  }, [dotCount, reactRadius, particleColor, glowColor, position, isInline, isFullscreen, width, height, globalMouseTracking]);
 
   const positionClasses: Record<string, string> = {
     "center": "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",

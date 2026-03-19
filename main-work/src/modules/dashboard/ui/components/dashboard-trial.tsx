@@ -5,6 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useSidebar } from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import {
   MAX_FREE_AGENTS,
@@ -14,8 +20,29 @@ import {
 export const DashboardTrial = () => {
   const trpc = useTRPC();
   const { data } = useQuery(trpc.premium.getFreeUsage.queryOptions());
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
 
   if (!data) return null;
+
+  // Show only rocket icon when collapsed
+  if (isCollapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex items-center justify-center rounded-lg border bg-sidebar-accent/30 p-2 cursor-default">
+            <RocketIcon className="size-5 text-sidebar-foreground" />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          <p className="font-medium">Free Trial</p>
+          <p className="text-xs text-muted-foreground">
+            {data.agentCount}/{MAX_FREE_AGENTS} Agents • {data.meetingCount}/{MAX_FREE_MEETINGS} Sessions
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
 
   return (
     <div className="flex flex-col rounded-lg border bg-sidebar-accent/30 p-3">

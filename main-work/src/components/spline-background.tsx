@@ -17,7 +17,7 @@ export function SplineBackground({ className }: SplineBackgroundProps) {
   }, []);
 
   if (!mounted) {
-    return <div className={`absolute inset-0 z-0 overflow-hidden ${className ?? ""}`} />;
+    return <div className={`absolute inset-0 z-10 overflow-hidden ${className ?? ""}`} />;
   }
 
   const isDark = resolvedTheme === "dark";
@@ -27,15 +27,18 @@ export function SplineBackground({ className }: SplineBackgroundProps) {
   const glowColor = "255, 255, 255";
 
   return (
-    <div className={`absolute inset-0 z-0 overflow-hidden ${className ?? ""}`}>
+    <div className={`absolute inset-0 z-10 overflow-hidden flex items-center justify-start pointer-events-none ${className ?? ""}`}>
       <SparkledBackground 
         key={isDark ? "dark" : "light"}
-        position="fullscreen"
+        position="inline"
         dotCount={1500}
         reactRadius={200}
         sphereRadius={150}
+        width={400}
+        height={400}
         particleColor={particleColor}
         glowColor={glowColor}
+        globalMouseTracking={true}
       />
     </div>
   );
