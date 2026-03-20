@@ -28,6 +28,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 import { DashboardUserButton } from "./dashboard-user-button";
@@ -45,7 +46,7 @@ const firstSection = [
     href: "/meetings",
   },
   {
-    icon: BotIcon,
+    icon: SparklesIcon,
     label: "Analytics Agents",
     href: "/agents",
   },
