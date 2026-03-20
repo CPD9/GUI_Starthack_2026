@@ -2,6 +2,8 @@
 
 This folder is now the primary Next.js application root for the StartHack 2026 build.
 
+> **Deploy:** Set Vercel Root Directory to `main-work` in Project Settings → General.
+
 ## Project Layout
 
 - `src/` - app routes, modules, API handlers, and UI components
