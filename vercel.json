@@ -1,3 +1,4 @@
 {
-  "rootDirectory": "main-work"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs"
 }

@@ -3,4 +3,71 @@ tutorial-inspiration/
 node_modules/
 
 # Local Docker export archives
-main-work/txp-mongo-*.tar
+txp-mongo-*.tar
+
+# macOS
+.DS_Store
+
+# Node
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Expo / React Native
+.expo/
+.expo-shared/
+dist/
+web-build/
+android/
+ios/
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.mobileprovision
+
+# Coverage / logs
+coverage/
+*.log
+
+# IDE
+.idea/
+.vscode/
+
+# Build outputs
+build/
+.next/
+tmp/
+temp/
+
+# Local setup artifacts
+.home/
+.cache/
+.corepack-home/
+.expo-home/
+.npm-cache/
+app/.npm-cache/
+mcp-server/.npm-cache/
+
+# Large local Docker exports
+txp-mongo-*.tar
+
+# Python virtual env
+.venv/
+.pytest_cache/
+
+# Local analytics datasets (never commit raw data)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/reports/*
+!data/reports/.gitkeep
